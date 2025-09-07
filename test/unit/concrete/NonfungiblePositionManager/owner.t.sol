@@ -24,14 +24,14 @@ contract OwnerTest is NonfungiblePositionManagerTest {
 
     function test_RevertIf_SetOwnerCallerIsNotOwner() public {
         vm.startPrank(users.alice);
-        vm.expectRevert();
+        vm.expectRevert(bytes("NO"));
         nft.setOwner(users.bob);
         vm.stopPrank();
     }
 
     function test_RevertIf_SetOwnerToZeroAddress() public {
         vm.startPrank(users.owner);
-        vm.expectRevert();
+        vm.expectRevert(bytes("ZA"));
         nft.setOwner(address(0));
         vm.stopPrank();
     }

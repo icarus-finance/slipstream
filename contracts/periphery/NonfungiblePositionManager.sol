@@ -2,6 +2,7 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
+import "contracts/core/interfaces/ICLFactory.sol";
 import "contracts/core/interfaces/ICLPool.sol";
 import "contracts/core/libraries/FixedPoint128.sol";
 import "contracts/core/libraries/FullMath.sol";
@@ -10,6 +11,7 @@ import "./interfaces/INonfungiblePositionManager.sol";
 import "./interfaces/INonfungibleTokenPositionDescriptor.sol";
 import "./libraries/PositionKey.sol";
 import "./libraries/PoolAddress.sol";
+import "./libraries/GaugeAddress.sol";
 import "./base/LiquidityManagement.sol";
 import "./base/PeripheryImmutableState.sol";
 import "./base/Multicall.sol";
@@ -77,18 +79,26 @@ contract NonfungiblePositionManager is
     /// @inheritdoc INonfungiblePositionManager
     address public override tokenDescriptor;
 
+    /// @inheritdoc INonfungiblePositionManager
+    address public immutable override gaugeFactory;
+
+    /// @inheritdoc INonfungiblePositionManager
+    address public immutable override gaugeImplementation;
+
     /// @dev Prevents calling a function from anyone except owner
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "NO");
         _;
     }
 
-    constructor(address _factory, address _WETH9, address _tokenDescriptor, string memory name, string memory symbol)
-        ERC721Permit(name, symbol, "1")
+    constructor(address _factory, address _WETH9, address _tokenDescriptor)
+        ERC721Permit("CL Positions NFT-V1", "CL-POS", "1")
         PeripheryImmutableState(_factory, _WETH9)
     {
         owner = msg.sender;
         tokenDescriptor = _tokenDescriptor;
+        gaugeFactory = ICLFactory(_factory).gaugeFactory();
+        gaugeImplementation = ICLFactory(_factory).gaugeImplementation();
     }
 
     /// @inheritdoc INonfungiblePositionManager
@@ -147,14 +157,6 @@ contract NonfungiblePositionManager is
         checkDeadline(params.deadline)
         returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)
     {
-        if (params.sqrtPriceX96 != 0) {
-            ICLFactory(factory).createPool({
-                tokenA: params.token0,
-                tokenB: params.token1,
-                tickSpacing: params.tickSpacing,
-                sqrtPriceX96: params.sqrtPriceX96
-            });
-        }
         PoolAddress.PoolKey memory poolKey =
             PoolAddress.PoolKey({token0: params.token0, token1: params.token1, tickSpacing: params.tickSpacing});
 
@@ -195,13 +197,11 @@ contract NonfungiblePositionManager is
             tokensOwed1: 0
         });
 
-        refundETH();
-
         emit IncreaseLiquidity(tokenId, liquidity, amount0, amount1);
     }
 
     modifier isAuthorizedForToken(uint256 tokenId) {
-        require(_isApprovedOrOwner(msg.sender, tokenId));
+        require(_isApprovedOrOwner(msg.sender, tokenId), "NA");
         _;
     }
 
@@ -227,9 +227,10 @@ contract NonfungiblePositionManager is
 
         ICLPool pool = ICLPool(PoolAddress.computeAddress(factory, poolKey));
 
-        address gauge = pool.gauge();
-        bool isStaked = ownerOf(params.tokenId) == gauge;
-        if (isStaked) require(msg.sender == gauge, "NG");
+        address _gauge = GaugeAddress.computeAddress(gaugeFactory, gaugeImplementation, poolKey);
+
+        bool isStaked = ownerOf(params.tokenId) == _gauge;
+        if (isStaked) require(msg.sender == _gauge, "NG");
 
         (liquidity, amount0, amount1) = addLiquidity(
             AddLiquidityParams({
@@ -241,12 +242,12 @@ contract NonfungiblePositionManager is
                 amount1Desired: params.amount1Desired,
                 amount0Min: params.amount0Min,
                 amount1Min: params.amount1Min,
-                recipient: isStaked ? gauge : address(this)
+                recipient: isStaked ? _gauge : address(this)
             })
         );
 
         bytes32 positionKey =
-            PositionKey.compute(isStaked ? gauge : address(this), position.tickLower, position.tickUpper);
+            PositionKey.compute(isStaked ? _gauge : address(this), position.tickLower, position.tickUpper);
 
         // this is now updated to the current transaction
         (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) = pool.positions(positionKey);
@@ -268,9 +269,6 @@ contract NonfungiblePositionManager is
         position.feeGrowthInside1LastX128 = feeGrowthInside1LastX128;
         position.liquidity += liquidity;
 
-        refundETH();
-
-        emit MetadataUpdate(params.tokenId);
         emit IncreaseLiquidity(params.tokenId, liquidity, amount0, amount1);
     }
 
@@ -292,18 +290,18 @@ contract NonfungiblePositionManager is
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         ICLPool pool = ICLPool(PoolAddress.computeAddress(factory, poolKey));
 
-        address gauge = pool.gauge();
-        bool isStaked = ownerOf(params.tokenId) == gauge;
+        address _gauge = GaugeAddress.computeAddress(gaugeFactory, gaugeImplementation, poolKey);
+        bool isStaked = ownerOf(params.tokenId) == _gauge;
         if (!isStaked) {
-            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity);
+            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity, address(this));
         } else {
-            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity, gauge);
+            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity, _gauge);
         }
 
         require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, "PS");
 
         bytes32 positionKey =
-            PositionKey.compute(isStaked ? gauge : address(this), position.tickLower, position.tickUpper);
+            PositionKey.compute(isStaked ? _gauge : address(this), position.tickLower, position.tickUpper);
         // this is now updated to the current transaction
         (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) = pool.positions(positionKey);
 
@@ -331,7 +329,6 @@ contract NonfungiblePositionManager is
         // subtraction is safe because we checked positionLiquidity is gte params.liquidity
         position.liquidity = positionLiquidity - params.liquidity;
 
-        emit MetadataUpdate(params.tokenId);
         emit DecreaseLiquidity(params.tokenId, params.liquidity, amount0, amount1);
     }
 
@@ -355,15 +352,15 @@ contract NonfungiblePositionManager is
 
         (uint128 tokensOwed0, uint128 tokensOwed1) = (position.tokensOwed0, position.tokensOwed1);
 
-        address gauge = pool.gauge();
-        bool isStaked = ownerOf(params.tokenId) == gauge;
+        address _gauge = GaugeAddress.computeAddress(gaugeFactory, gaugeImplementation, poolKey);
+        bool isStaked = ownerOf(params.tokenId) == _gauge;
 
         // trigger an update of the position fees owed and fee growth snapshots if it has any liquidity
         if (position.liquidity > 0) {
             uint256 feeGrowthInside0LastX128;
             uint256 feeGrowthInside1LastX128;
             if (!isStaked) {
-                pool.burn(position.tickLower, position.tickUpper, 0);
+                pool.burn(position.tickLower, position.tickUpper, 0, address(this));
 
                 (, feeGrowthInside0LastX128, feeGrowthInside1LastX128,,) =
                     pool.positions(PositionKey.compute(address(this), position.tickLower, position.tickUpper));
@@ -383,10 +380,10 @@ contract NonfungiblePositionManager is
                     )
                 );
             } else {
-                pool.burn(position.tickLower, position.tickUpper, 0, gauge);
+                pool.burn(position.tickLower, position.tickUpper, 0, _gauge);
 
                 (, feeGrowthInside0LastX128, feeGrowthInside1LastX128,,) =
-                    pool.positions(PositionKey.compute(gauge, position.tickLower, position.tickUpper));
+                    pool.positions(PositionKey.compute(_gauge, position.tickLower, position.tickUpper));
             }
 
             position.feeGrowthInside0LastX128 = feeGrowthInside0LastX128;
@@ -400,19 +397,19 @@ contract NonfungiblePositionManager is
         );
 
         // the actual amounts collected are returned
-        if (!isStaked) {
-            (amount0, amount1) =
-                pool.collect(recipient, position.tickLower, position.tickUpper, amount0Collect, amount1Collect);
-        } else {
-            (amount0, amount1) =
-                pool.collect(recipient, position.tickLower, position.tickUpper, amount0Collect, amount1Collect, gauge);
-        }
+        (amount0, amount1) = pool.collect(
+            recipient,
+            position.tickLower,
+            position.tickUpper,
+            amount0Collect,
+            amount1Collect,
+            isStaked ? _gauge : address(this)
+        );
 
         // sometimes there will be a few less wei than expected due to rounding down in core, but we just subtract the full amount expected
         // instead of the actual amount so we can burn the token
         (position.tokensOwed0, position.tokensOwed1) = (tokensOwed0 - amount0Collect, tokensOwed1 - amount1Collect);
 
-        emit MetadataUpdate(params.tokenId);
         emit Collect(params.tokenId, recipient, amount0Collect, amount1Collect);
     }
 
@@ -443,7 +440,7 @@ contract NonfungiblePositionManager is
 
     /// @inheritdoc INonfungiblePositionManager
     function setTokenDescriptor(address _tokenDescriptor) external override onlyOwner {
-        require(_tokenDescriptor != address(0));
+        require(_tokenDescriptor != address(0), "ZA");
         tokenDescriptor = _tokenDescriptor;
         emit BatchMetadataUpdate(0, type(uint256).max);
         emit TokenDescriptorChanged(_tokenDescriptor);
@@ -451,7 +448,7 @@ contract NonfungiblePositionManager is
 
     /// @inheritdoc INonfungiblePositionManager
     function setOwner(address _owner) external override onlyOwner {
-        require(_owner != address(0));
+        require(_owner != address(0), "ZA");
         owner = _owner;
         emit TransferOwnership(_owner);
     }

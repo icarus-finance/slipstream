@@ -56,7 +56,6 @@ describe('SwapRouter gas tests', function () {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-        sqrtPriceX96: 0,
       }
 
       return nft.mint(liquidityParams)
@@ -239,16 +238,16 @@ describe('SwapRouter gas tests', function () {
     const slots = await Promise.all(
       pools.map((pool) =>
         Promise.all([
-          pool.feeGrowthGlobal0X128().then((f) => f.toString()),
-          pool.feeGrowthGlobal1X128().then((f) => f.toString()),
+          pool['gaugeFees()']().then((f) => f.token0.toString()),
+          pool['gaugeFees()']().then((f) => f.token1.toString()),
         ])
       )
     )
 
     expect(slots).to.deep.eq([
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
+      ['1', '1'],
+      ['1', '1'],
+      ['1', '1'],
     ])
   })
 

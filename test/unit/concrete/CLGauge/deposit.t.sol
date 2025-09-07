@@ -21,7 +21,7 @@ contract DepositTest is CLGaugeTest {
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
         );
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
 
         vm.startPrank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
@@ -40,8 +40,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -62,8 +61,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -82,13 +80,12 @@ contract DepositTest is CLGaugeTest {
         deal({token: address(testToken0), to: users.charlie, give: TOKEN_1});
         deal({token: address(testToken1), to: users.charlie, give: TOKEN_1});
 
-        address pool2 = poolFactory.createPool({
+        poolFactory.createPool({
             tokenA: address(testToken0),
             tokenB: address(testToken1),
             tickSpacing: TICK_SPACING_60,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool2)});
 
         vm.startPrank(users.charlie);
         testToken0.approve(address(nft), type(uint256).max);
@@ -105,8 +102,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -116,13 +112,12 @@ contract DepositTest is CLGaugeTest {
     }
 
     function test_RevertIf_DepositIsNotFromCorrespondingPoolWithSameTokensDifferentTickSize() public {
-        address pool2 = poolFactory.createPool({
+        poolFactory.createPool({
             tokenA: address(token0),
             tokenB: address(token1),
             tickSpacing: TICK_SPACING_10,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool2)});
 
         vm.startPrank(users.charlie);
         INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
@@ -136,8 +131,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -158,8 +152,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 
@@ -173,9 +166,6 @@ contract DepositTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(gauge));
         assertEq(gauge.stakedLength(users.alice), 1);
         assertEq(gauge.stakedContains(users.alice, 1), true);
-        assertEq(gauge.stakedByIndex(users.alice, 0), tokenId);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked[0], tokenId);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), liquidity);
         assertEqUint(pool.stakedLiquidity(), liquidity);
@@ -207,8 +197,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 
@@ -222,9 +211,6 @@ contract DepositTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(gauge));
         assertEq(gauge.stakedLength(users.alice), 1);
         assertEq(gauge.stakedContains(users.alice, 1), true);
-        assertEq(gauge.stakedByIndex(users.alice, 0), tokenId);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked[0], tokenId);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), 0);
         assertEqUint(pool.stakedLiquidity(), 0);
@@ -256,8 +242,7 @@ contract DepositTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 
@@ -271,9 +256,6 @@ contract DepositTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(gauge));
         assertEq(gauge.stakedLength(users.alice), 1);
         assertEq(gauge.stakedContains(users.alice, 1), true);
-        assertEq(gauge.stakedByIndex(users.alice, 0), tokenId);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked[0], tokenId);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), 0);
         assertEqUint(pool.stakedLiquidity(), 0);

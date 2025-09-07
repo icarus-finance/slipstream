@@ -13,7 +13,7 @@ import {
   MixedRouteQuoterV1,
   QuoterV2,
 } from '../../typechain'
-import jsonConstants from '../constants/Base.json'
+import jsonConstants from '../constants/Optimism.json'
 
 async function deployLibrary(typeName: string, ...args: any[]): Promise<Contract> {
   const ctrFactory = await ethers.getContractFactory(typeName)
@@ -44,6 +44,8 @@ async function main() {
     gaugeImplementation.address
   )
 
+  await poolFactory.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
+
   const nftDescriptorLibrary = await deployLibrary('NFTDescriptor')
   const nftDescriptor = await deploy<NonfungibleTokenPositionDescriptor>(
     'NonfungibleTokenPositionDescriptor',
@@ -59,6 +61,7 @@ async function main() {
     nftDescriptor.address
   )
 
+  await poolFactory.setNonfungiblePositionManager(nft.address)
   await gaugeFactory.setNonfungiblePositionManager(nft.address)
 
   const swapFeeModule = await deploy<CustomSwapFeeModule>('CustomSwapFeeModule', undefined, poolFactory.address)

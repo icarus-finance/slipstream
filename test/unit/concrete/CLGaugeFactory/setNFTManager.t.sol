@@ -13,9 +13,7 @@ contract SetNFTManagerTest is CLGaugeFactoryTest {
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor),
-            name: nftName,
-            symbol: nftSymbol
+            _tokenDescriptor: address(nftDescriptor)
         });
         vm.stopPrank();
     }

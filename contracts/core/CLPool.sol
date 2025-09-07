@@ -19,12 +19,11 @@ import "./libraries/SqrtPriceMath.sol";
 import "./libraries/SwapMath.sol";
 
 import "./interfaces/ICLFactory.sol";
-import "./interfaces/IFactoryRegistry.sol";
 import "./interfaces/IERC20Minimal.sol";
 import "./interfaces/callback/ICLMintCallback.sol";
 import "./interfaces/callback/ICLSwapCallback.sol";
 import "./interfaces/callback/ICLFlashCallback.sol";
-import "contracts/libraries/ProtocolTimeLibrary.sol";
+import "contracts/libraries/VelodromeTimeLibrary.sol";
 
 contract CLPool is ICLPool {
     using LowGasSafeMath for uint256;
@@ -47,8 +46,6 @@ contract CLPool is ICLPool {
     address public override gauge;
     /// @inheritdoc ICLPoolConstants
     address public override nft;
-    /// @inheritdoc ICLPoolConstants
-    address public override factoryRegistry;
 
     struct Slot0 {
         // the current price
@@ -127,7 +124,7 @@ contract CLPool is ICLPool {
 
     /// @dev Prevents calling a function from anyone except the gauge associated with this pool
     modifier onlyGauge() {
-        require(msg.sender == gauge, "NG");
+        require(msg.sender == gauge);
         _;
     }
 
@@ -137,20 +134,14 @@ contract CLPool is ICLPool {
         _;
     }
 
-    /// @dev Prevents calling a function from anyone except the gauge factory
-    modifier onlyGaugeFactory() {
-        (, address gaugeFactory) = IFactoryRegistry(factoryRegistry).factoriesToPoolFactory(address(factory));
-        require(msg.sender == gaugeFactory, "NGF");
-        _;
-    }
-
     /// @inheritdoc ICLPoolActions
     function initialize(
         address _factory,
         address _token0,
         address _token1,
         int24 _tickSpacing,
-        address _factoryRegistry,
+        address _gauge,
+        address _nft,
         uint160 _sqrtPriceX96
     ) external override {
         require(factory == address(0) && _factory != address(0));
@@ -158,7 +149,8 @@ contract CLPool is ICLPool {
         token0 = _token0;
         token1 = _token1;
         tickSpacing = _tickSpacing;
-        factoryRegistry = _factoryRegistry;
+        gauge = _gauge;
+        nft = _nft;
 
         maxLiquidityPerTick = Tick.tickSpacingToMaxLiquidityPerTick(_tickSpacing);
 
@@ -216,72 +208,6 @@ contract CLPool is ICLPool {
             token1.staticcall(abi.encodeWithSelector(IERC20Minimal.balanceOf.selector, address(this)));
         require(success && data.length >= 32);
         return abi.decode(data, (uint256));
-    }
-
-    /// @inheritdoc ICLPoolDerivedState
-    function snapshotCumulativesInside(int24 tickLower, int24 tickUpper)
-        external
-        view
-        override
-        returns (int56 tickCumulativeInside, uint160 secondsPerLiquidityInsideX128, uint32 secondsInside)
-    {
-        checkTicks(tickLower, tickUpper);
-
-        int56 tickCumulativeLower;
-        int56 tickCumulativeUpper;
-        uint160 secondsPerLiquidityOutsideLowerX128;
-        uint160 secondsPerLiquidityOutsideUpperX128;
-        uint32 secondsOutsideLower;
-        uint32 secondsOutsideUpper;
-
-        {
-            Tick.Info storage lower = ticks[tickLower];
-            Tick.Info storage upper = ticks[tickUpper];
-            bool initializedLower;
-            (tickCumulativeLower, secondsPerLiquidityOutsideLowerX128, secondsOutsideLower, initializedLower) = (
-                lower.tickCumulativeOutside,
-                lower.secondsPerLiquidityOutsideX128,
-                lower.secondsOutside,
-                lower.initialized
-            );
-            require(initializedLower);
-
-            bool initializedUpper;
-            (tickCumulativeUpper, secondsPerLiquidityOutsideUpperX128, secondsOutsideUpper, initializedUpper) = (
-                upper.tickCumulativeOutside,
-                upper.secondsPerLiquidityOutsideX128,
-                upper.secondsOutside,
-                upper.initialized
-            );
-            require(initializedUpper);
-        }
-
-        Slot0 memory _slot0 = slot0;
-
-        if (_slot0.tick < tickLower) {
-            return (
-                tickCumulativeLower - tickCumulativeUpper,
-                secondsPerLiquidityOutsideLowerX128 - secondsPerLiquidityOutsideUpperX128,
-                secondsOutsideLower - secondsOutsideUpper
-            );
-        } else if (_slot0.tick < tickUpper) {
-            uint32 time = _blockTimestamp();
-            (int56 tickCumulative, uint160 secondsPerLiquidityCumulativeX128) = observations.observeSingle(
-                time, 0, _slot0.tick, _slot0.observationIndex, liquidity, _slot0.observationCardinality
-            );
-            return (
-                tickCumulative - tickCumulativeLower - tickCumulativeUpper,
-                secondsPerLiquidityCumulativeX128 - secondsPerLiquidityOutsideLowerX128
-                    - secondsPerLiquidityOutsideUpperX128,
-                time - secondsOutsideLower - secondsOutsideUpper
-            );
-        } else {
-            return (
-                tickCumulativeUpper - tickCumulativeLower,
-                secondsPerLiquidityOutsideUpperX128 - secondsPerLiquidityOutsideLowerX128,
-                secondsOutsideUpper - secondsOutsideLower
-            );
-        }
     }
 
     /// @inheritdoc ICLPoolDerivedState
@@ -434,7 +360,7 @@ contract CLPool is ICLPool {
         (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) =
             ticks.getFeeGrowthInside(tickLower, tickUpper, tick, _feeGrowthGlobal0X128, _feeGrowthGlobal1X128);
 
-        bool staked = (owner == gauge) && (owner != address(0));
+        bool staked = owner == gauge;
         position.update(liquidityDelta, feeGrowthInside0X128, feeGrowthInside1X128, staked);
 
         // clear any tick data that is no longer needed
@@ -1034,12 +960,5 @@ contract CLPool is ICLPool {
         }
 
         emit CollectFees(msg.sender, amount0, amount1);
-    }
-
-    /// @inheritdoc ICLPoolActions
-    function setGaugeAndPositionManager(address _gauge, address _nft) external override lock onlyGaugeFactory {
-        require(gauge == address(0));
-        gauge = _gauge;
-        nft = _nft;
     }
 }

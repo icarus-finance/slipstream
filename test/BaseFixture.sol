@@ -57,9 +57,6 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
     CustomSwapFeeModule public customSwapFeeModule;
     CustomUnstakedFeeModule public customUnstakedFeeModule;
 
-    string public nftName = "Slipstream Position NFT v1";
-    string public nftSymbol = "CL-POS";
-
     function setUp() public virtual {
         users = Users({
             owner: createUser("Owner"),
@@ -85,6 +82,10 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         // deploy gauges and associated contracts
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
+        poolFactory.setGaugeFactory({
+            _gaugeFactory: address(gaugeFactory),
+            _gaugeImplementation: address(gaugeImplementation)
+        });
 
         // deploy nft manager and descriptor
         nftDescriptor = new NonfungibleTokenPositionDescriptor({
@@ -94,14 +95,12 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor),
-            name: nftName,
-            symbol: nftSymbol
+            _tokenDescriptor: address(nftDescriptor)
         });
 
         // set nftmanager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        gaugeFactory.setNotifyAdmin(users.owner);
+        poolFactory.setNonfungiblePositionManager(address(nft));
         vm.stopPrank();
 
         // approve gauge in factory registry
@@ -187,7 +186,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         if (rewardToken.allowance(_voter, _gauge) < _amount) {
             rewardToken.approve(_gauge, _amount);
         }
-        CLGauge(payable(_gauge)).notifyRewardAmount(_amount);
+        CLGauge(_gauge).notifyRewardAmount(_amount);
         vm.stopPrank();
     }
 

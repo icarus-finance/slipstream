@@ -3,7 +3,6 @@ src = "contracts"
 test = "test"
 out = "out"
 libs = ["lib"]
-solc_version = "0.7.6"
 
 fs_permissions = [{ access = "read-write", path = "./"}]
 
@@ -15,9 +14,9 @@ no_match_test = "testEchidna"
 runs = 5000
 
 [rpc_endpoints]
-base_goerli = "${BASE_GOERLI_RPC_URL}"
-base = "${BASE_RPC_URL}"
+optimism_goerli = "${OPTIMISM_GOERLI_RPC_URL}"
+optimism = "${OPTIMISM_RPC_URL}"
 
 [etherscan]
-base_goerli = { key = "${BASE_GOERLI_ETHERSCAN_API_KEY}", url = "${BASE_GOERLI_ETHERSCAN_VERIFIER_URL}" }
-base = { key = "${BASE_ETHERSCAN_API_KEY}", url = "${BASE_ETHERSCAN_VERIFIER_URL}" }
+optimism_goerli = { key = "${OPTIMISM_GOERLI_ETHERSCAN_API_KEY}", url = "${OPTIMISM_GOERLI_ETHERSCAN_VERIFIER_URL}" }
+optimism = { key = "${OPTIMISM_ETHERSCAN_API_KEY}", url = "${OPTIMISM_ETHERSCAN_VERIFIER_URL}" }

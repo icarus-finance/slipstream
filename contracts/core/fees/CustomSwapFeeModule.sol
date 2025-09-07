@@ -23,7 +23,7 @@ contract CustomSwapFeeModule is ICustomFeeModule {
     function setCustomFee(address pool, uint24 fee) external override {
         require(msg.sender == factory.swapFeeManager());
         require(fee <= MAX_FEE || fee == ZERO_FEE_INDICATOR);
-        require(factory.isPool(pool));
+        require(factory.isPair(pool));
 
         customFee[pool] = fee;
         emit SetCustomFee(pool, fee);

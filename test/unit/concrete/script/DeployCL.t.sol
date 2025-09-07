@@ -14,7 +14,7 @@ import {CLGaugeFactory} from "contracts/gauge/CLGaugeFactory.sol";
 import {CustomSwapFeeModule} from "contracts/core/fees/CustomSwapFeeModule.sol";
 import {CustomUnstakedFeeModule} from "contracts/core/fees/CustomUnstakedFeeModule.sol";
 
-contract DeployCLForkTest is Test {
+contract DeployCLTest is Test {
     using stdJson for string;
 
     DeployCL public deployCL;
@@ -31,9 +31,6 @@ contract DeployCLForkTest is Test {
     address public factoryRegistry;
     address public poolFactoryOwner;
     address public feeManager;
-    address public notifyAdmin;
-    string public nftName;
-    string public nftSymbol;
 
     // deployed contracts
     CLPool public poolImplementation;
@@ -46,7 +43,6 @@ contract DeployCLForkTest is Test {
     CustomUnstakedFeeModule public unstakedFeeModule;
 
     function setUp() public {
-        vm.createSelectFork({urlOrAlias: "base", blockNumber: 12670000});
         deployCL = new DeployCL();
 
         string memory root = vm.projectRoot();
@@ -60,9 +56,6 @@ contract DeployCLForkTest is Test {
         factoryRegistry = abi.decode(vm.parseJson(jsonConstants, ".FactoryRegistry"), (address));
         poolFactoryOwner = abi.decode(vm.parseJson(jsonConstants, ".poolFactoryOwner"), (address));
         feeManager = abi.decode(vm.parseJson(jsonConstants, ".feeManager"), (address));
-        notifyAdmin = abi.decode(vm.parseJson(jsonConstants, ".notifyAdmin"), (address));
-        nftName = abi.decode(vm.parseJson(jsonConstants, ".nftName"), (string));
-        nftSymbol = abi.decode(vm.parseJson(jsonConstants, ".nftSymbol"), (string));
 
         deal(address(deployerAddress), 10 ether);
     }
@@ -84,13 +77,14 @@ contract DeployCLForkTest is Test {
         assertTrue(address(poolFactory) != address(0));
         assertEq(address(poolFactory.voter()), voter);
         assertEq(address(poolFactory.poolImplementation()), address(poolImplementation));
-        assertEq(address(poolFactory.factoryRegistry()), address(factoryRegistry));
         assertEq(address(poolFactory.owner()), poolFactoryOwner);
         assertEq(address(poolFactory.swapFeeModule()), address(swapFeeModule));
         assertEq(address(poolFactory.swapFeeManager()), feeManager);
         assertEq(address(poolFactory.unstakedFeeModule()), address(unstakedFeeModule));
         assertEq(address(poolFactory.unstakedFeeManager()), feeManager);
-        assertEqUint(poolFactory.defaultUnstakedFee(), 100_000);
+        assertEq(address(poolFactory.nft()), address(nft));
+        assertEq(address(poolFactory.gaugeFactory()), address(gaugeFactory));
+        assertEq(address(poolFactory.gaugeImplementation()), address(gaugeImplementation));
         assertEqUint(poolFactory.tickSpacingToFee(1), 100);
         assertEqUint(poolFactory.tickSpacingToFee(50), 500);
         assertEqUint(poolFactory.tickSpacingToFee(100), 500);
@@ -105,22 +99,19 @@ contract DeployCLForkTest is Test {
         assertEq(nft.factory(), address(poolFactory));
         assertEq(nft.WETH9(), weth);
         assertEq(nft.owner(), team);
-        assertEq(nft.name(), nftName);
-        assertEq(nft.symbol(), nftSymbol);
 
         assertTrue(address(gaugeImplementation) != address(0));
         assertTrue(address(gaugeFactory) != address(0));
         assertEq(gaugeFactory.voter(), voter);
         assertEq(gaugeFactory.implementation(), address(gaugeImplementation));
         assertEq(gaugeFactory.nft(), address(nft));
-        assertEq(gaugeFactory.notifyAdmin(), notifyAdmin);
 
         assertTrue(address(swapFeeModule) != address(0));
         assertEq(swapFeeModule.MAX_FEE(), 30_000); // 3%, using pip denomination
         assertEq(address(swapFeeModule.factory()), address(poolFactory));
 
         assertTrue(address(unstakedFeeModule) != address(0));
-        assertEq(unstakedFeeModule.MAX_FEE(), 500_000); // 50%, using pip denomination
+        assertEq(unstakedFeeModule.MAX_FEE(), 200_000); // 20%, using pip denomination
         assertEq(address(unstakedFeeModule.factory()), address(poolFactory));
     }
 

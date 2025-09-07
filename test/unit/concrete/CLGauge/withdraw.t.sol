@@ -10,8 +10,6 @@ contract WithdrawTest is CLGaugeTest {
     CLPool public pool;
     CLGauge public gauge;
 
-    event MetadataUpdate(uint256 _tokenId);
-
     function setUp() public override {
         super.setUp();
 
@@ -27,7 +25,7 @@ contract WithdrawTest is CLGaugeTest {
         vm.prank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
 
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
 
         vm.startPrank(users.alice);
     }
@@ -44,8 +42,7 @@ contract WithdrawTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -69,8 +66,7 @@ contract WithdrawTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
         nft.approve(address(gauge), tokenId);
@@ -89,8 +85,6 @@ contract WithdrawTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(users.alice));
         assertEq(gauge.stakedLength(users.alice), 0);
         assertEq(gauge.stakedContains(users.alice, 1), false);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked.length, 0);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), liquidity);
         assertEqUint(pool.stakedLiquidity(), 0);
@@ -122,8 +116,7 @@ contract WithdrawTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
         nft.approve(address(gauge), tokenId);
@@ -142,8 +135,6 @@ contract WithdrawTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(users.alice));
         assertEq(gauge.stakedLength(users.alice), 0);
         assertEq(gauge.stakedContains(users.alice, 1), false);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked.length, 0);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), 0);
         assertEqUint(pool.stakedLiquidity(), 0);
@@ -175,8 +166,7 @@ contract WithdrawTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10,
-            sqrtPriceX96: 0
+            deadline: 10
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
         nft.approve(address(gauge), tokenId);
@@ -195,8 +185,6 @@ contract WithdrawTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), address(users.alice));
         assertEq(gauge.stakedLength(users.alice), 0);
         assertEq(gauge.stakedContains(users.alice, 1), false);
-        uint256[] memory staked = gauge.stakedValues(users.alice);
-        assertEq(staked.length, 0);
         assertEq(gauge.rewardGrowthInside(tokenId), 0);
         assertEqUint(pool.liquidity(), 0);
         assertEqUint(pool.stakedLiquidity(), 0);
@@ -229,8 +217,7 @@ contract WithdrawTest is CLGaugeTest {
             amount1Desired: TOKEN_1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: block.timestamp,
-            sqrtPriceX96: 0
+            deadline: block.timestamp
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
         nft.approve(address(gauge), tokenId);
@@ -243,8 +230,6 @@ contract WithdrawTest is CLGaugeTest {
 
         skip(2 days);
 
-        vm.expectEmit(false, false, false, true, address(nft));
-        emit MetadataUpdate(tokenId);
         vm.expectEmit(true, true, true, false, address(gauge));
         emit Withdraw({user: users.alice, tokenId: tokenId, liquidityToStake: liquidity});
         gauge.withdraw({tokenId: tokenId});
@@ -593,5 +578,69 @@ contract WithdrawTest is CLGaugeTest {
         // feeGrowthInsideXLastX128 should be the same for staked and unstaked in all cases
         assertEq(feeGrowthInside0LastX128Gauge, feeGrowthInside0LastX128Nft);
         assertEq(feeGrowthInside1LastX128Gauge, feeGrowthInside1LastX128Nft);
+    }
+
+    function test_WithdrawPossibleAfterDecreaseStakedLiquidityToZero() public {
+        uint256 tokenId =
+            nftCallee.mintNewFullRangePositionForUserWith60TickSpacing(TOKEN_1 * 2, TOKEN_1 * 2, users.alice);
+
+        (,,,,,,, uint128 positionLiquidity,,,,) = nft.positions(tokenId);
+
+        nft.approve(address(gauge), tokenId);
+        gauge.deposit(tokenId);
+
+        assertEq(pool.stakedLiquidity(), TOKEN_1 * 2);
+        assertEq(pool.liquidity(), TOKEN_1 * 2);
+        assertEq(positionLiquidity, TOKEN_1 * 2);
+
+        uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
+        uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
+
+        gauge.decreaseStakedLiquidity(tokenId, uint128(TOKEN_1 * 2), 0, 0, block.timestamp);
+
+        uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
+        uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);
+
+        assertApproxEqAbs(aliceBalanceAfter0 - aliceBalanceBefore0, TOKEN_1 * 2, 1);
+        assertApproxEqAbs(aliceBalanceAfter1 - aliceBalanceBefore1, TOKEN_1 * 2, 1);
+
+        (,,,,,,, positionLiquidity,,,,) = nft.positions(tokenId);
+
+        assertEqUint(pool.stakedLiquidity(), 0);
+        assertEqUint(pool.liquidity(), 0);
+        assertEqUint(positionLiquidity, 0);
+
+        // ticks should be cleared
+        int24 minTick = getMinTick(TICK_SPACING_60);
+        int24 maxTick = getMaxTick(TICK_SPACING_60);
+        (, int128 liquidityNet, int128 stakedLiquidityNet,,,,,,,) = pool.ticks(minTick);
+        assertEq(liquidityNet, 0);
+        assertEq(stakedLiquidityNet, 0);
+        (,, stakedLiquidityNet,,,,,,,) = pool.ticks(maxTick);
+        assertEq(liquidityNet, 0);
+        assertEq(stakedLiquidityNet, 0);
+
+        gauge.withdraw({tokenId: tokenId});
+
+        assertEq(nft.balanceOf(address(gauge)), 0);
+        assertEq(nft.balanceOf(users.alice), 1);
+        assertEq(nft.ownerOf(tokenId), address(users.alice));
+        assertEq(gauge.stakedLength(users.alice), 0);
+        assertEq(gauge.stakedContains(users.alice, 1), false);
+        assertEq(gauge.rewardGrowthInside(tokenId), 0);
+        assertEqUint(pool.liquidity(), 0);
+        assertEqUint(pool.stakedLiquidity(), 0);
+        (,, stakedLiquidityNet,,,,,,,) = pool.ticks(minTick);
+        assertEq(stakedLiquidityNet, 0);
+        (,, stakedLiquidityNet,,,,,,,) = pool.ticks(maxTick);
+        assertEq(stakedLiquidityNet, 0);
+        assertEq(gauge.rewards(tokenId), 0);
+        assertEq(gauge.lastUpdateTime(tokenId), 1);
+
+        (uint128 nftLiquidity,,,,) = pool.positions(keccak256(abi.encodePacked(address(nft), minTick, maxTick)));
+        assertEqUint(nftLiquidity, 0);
+
+        (uint128 gaugeLiquidity,,,,) = pool.positions(keccak256(abi.encodePacked(address(gauge), minTick, maxTick)));
+        assertEqUint(gaugeLiquidity, 0);
     }
 }

@@ -44,9 +44,9 @@ jobs:
         run: yarn compile
 
       - name: Run unit tests
-        run: yarn test --parallel
+        run: yarn test
         env: 
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
   test:
     name: Foundry Unit Tests
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
         run: forge install
 
       - name: Run tests
-        run: OUTPUT_FILENAME=Base.json CONSTANTS_FILENAME=Base.json forge test -vvv
+        run: OUTPUT_FILENAME=Optimism.json CONSTANTS_FILENAME=Optimism.json forge test -vvv
         env: 
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
           PRIVATE_KEY_DEPLOY: ${{ secrets.PRIVATE_KEY_DEPLOY }}

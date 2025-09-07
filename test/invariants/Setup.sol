@@ -123,17 +123,21 @@ contract SetupCL {
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
+        poolFactory.setGaugeFactory({
+            _gaugeFactory: address(gaugeFactory),
+            _gaugeImplementation: address(gaugeImplementation)
+        });
+
         // deploy nft manager
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(100),
-            name: "Slipstream Position NFT v1",
-            symbol: "CL-POS"
+            _tokenDescriptor: address(100)
         });
 
         // set nft manager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
+        poolFactory.setNonfungiblePositionManager(address(nft));
 
         factoryRegistry.approve({
             poolFactory: address(poolFactory),
@@ -160,7 +164,7 @@ contract SetupCL {
             })
         );
 
-        gauge = CLGauge(payable(voter.gauges(address(pool))));
+        gauge = CLGauge(voter.gauges(address(pool)));
 
         hevm.prank(address(voter));
         rewardToken.approve(address(gauge), 1000000000e18);
@@ -272,8 +276,7 @@ contract CLMinter is ERC721Holder {
             amount1Desired: amount1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: block.timestamp,
-            sqrtPriceX96: 0
+            deadline: block.timestamp
         });
 
         (tokenId,,,) = nft.mint(params);
@@ -302,8 +305,7 @@ contract CLMinter is ERC721Holder {
             amount1Desired: amount1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: block.timestamp,
-            sqrtPriceX96: 0
+            deadline: block.timestamp
         });
 
         (tokenId,,,) = nft.mint(params);
@@ -417,6 +419,90 @@ contract CLMinter is ERC721Holder {
         uint256 token1Change;
         uint256 actualToken0Change;
         uint256 actualToken1Change;
+    }
+
+    function increaseStakedLiquidity(uint256 tokenId, uint128 liquidity)
+        public
+        returns (LiquidityManagementData memory lmd)
+    {
+        (,,,,,,, lmd.liquidityBefore, lmd.feeGrowthInside0LastX128Before, lmd.feeGrowthInside1LastX128Before,,) =
+            nft.positions(tokenId);
+
+        uint256 amount0;
+        uint256 amount1;
+        {
+            (, int24 currentTick,,,,) = pool.slot0();
+            (,,,,, int24 tickLower, int24 tickUpper,,,,,) = nft.positions(tokenId);
+
+            (amount0, amount1) = LiquidityAmounts.getAmountsForLiquidity(
+                TickMath.getSqrtRatioAtTick(currentTick),
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                liquidity
+            );
+        }
+
+        Balances memory beforeBalance = getBalances();
+
+        token0.approve(address(gauge), amount0);
+        token1.approve(address(gauge), amount1);
+        (, lmd.token0Change, lmd.token1Change) =
+            gauge.increaseStakedLiquidity(tokenId, amount0, amount1, 0, 0, block.timestamp);
+
+        Balances memory afterBalance = getBalances();
+
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            lmd.liquidityAfter,
+            lmd.feeGrowthInside0LastX128After,
+            lmd.feeGrowthInside1LastX128After,
+            lmd.tokensOwed0,
+            lmd.tokensOwed1
+        ) = nft.positions(tokenId);
+        lmd.collectedReward = afterBalance.rewardToken - beforeBalance.rewardToken;
+        lmd.actualToken0Change = beforeBalance.token0 - afterBalance.token0;
+        lmd.actualToken1Change = beforeBalance.token1 - afterBalance.token1;
+    }
+
+    function decreaseStakedLiquidity(uint256 tokenId, uint128 seed)
+        public
+        returns (LiquidityManagementData memory lmd)
+    {
+        (,,,,,,, lmd.liquidityBefore, lmd.feeGrowthInside0LastX128Before, lmd.feeGrowthInside1LastX128Before,,) =
+            nft.positions(tokenId);
+
+        uint128 liquidityToRemove = get_random_decrease_amount(seed, lmd.liquidityBefore);
+
+        Balances memory beforeBalance = getBalances();
+
+        (lmd.token0Change, lmd.token1Change) =
+            gauge.decreaseStakedLiquidity(tokenId, liquidityToRemove, 0, 0, block.timestamp);
+
+        Balances memory afterBalance = getBalances();
+
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            lmd.liquidityAfter,
+            lmd.feeGrowthInside0LastX128After,
+            lmd.feeGrowthInside1LastX128After,
+            lmd.tokensOwed0,
+            lmd.tokensOwed1
+        ) = nft.positions(tokenId);
+        lmd.collectedReward = afterBalance.rewardToken - beforeBalance.rewardToken;
+        lmd.actualToken0Change = afterBalance.token0 - beforeBalance.token0;
+        lmd.actualToken1Change = afterBalance.token1 - beforeBalance.token1;
     }
 
     function nftCollect(uint256 tokenId) public returns (uint256 amount0, uint256 amount1) {

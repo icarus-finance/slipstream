@@ -26,7 +26,7 @@ contract SetCustomUnstakedFeeTest is CustomUnstakedFeeModuleTest {
         });
 
         vm.expectRevert();
-        customUnstakedFeeModule.setCustomFee({pool: pool, fee: 500_001});
+        customUnstakedFeeModule.setCustomFee({pool: pool, fee: 200_001});
     }
 
     function test_RevertIf_NotPool() public {
@@ -42,7 +42,6 @@ contract SetCustomUnstakedFeeTest is CustomUnstakedFeeModuleTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)});
 
         vm.expectEmit(true, true, false, false, address(customUnstakedFeeModule));
         emit SetCustomFee({pool: pool, fee: 5_000});
@@ -79,7 +78,6 @@ contract SetCustomUnstakedFeeTest is CustomUnstakedFeeModuleTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)});
         uint24 maxFee = 1_000_000;
         uint24 defaultFee = 100_000;
 

@@ -20,7 +20,7 @@ contract OracleEchidnaTest {
     }
 
     function limitTimePassed(uint32 by) private {
-        require(timePassed + by >= timePassed);
+        require(timePassed + by + 14 >= timePassed); // ensure observations are always written
         timePassed += by;
     }
 
@@ -32,6 +32,11 @@ contract OracleEchidnaTest {
     // write an observation, then change tick and liquidity
     function update(uint32 advanceTimeBy, int24 tick, uint128 liquidity) external {
         limitTimePassed(advanceTimeBy);
+
+        //ensure time does not overflow uint32
+        (uint32 lastTimestamp,,,) = oracle.observations(oracle.index());
+        require(lastTimestamp + 14 > lastTimestamp);
+
         oracle.update(OracleTest.UpdateParams({advanceTimeBy: advanceTimeBy, tick: tick, liquidity: liquidity}));
     }
 

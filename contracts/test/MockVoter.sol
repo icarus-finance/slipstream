@@ -27,7 +27,7 @@ contract MockVoter is IVoter {
     mapping(address => address) public override gaugeToBribes;
 
     IERC20 internal immutable rewardToken;
-    IFactoryRegistry public immutable override factoryRegistry;
+    IFactoryRegistry public immutable factoryRegistry;
     IVotingEscrow public immutable override ve;
     address public immutable override emergencyCouncil;
 
@@ -57,7 +57,7 @@ contract MockVoter is IVoter {
 
         address gauge =
             CLGaugeFactory(gaugeFactory).createGauge(forwarder, _pool, feesVotingReward, address(rewardToken), true);
-        require(CLFactory(_poolFactory).isPool(_pool));
+        require(CLFactory(_poolFactory).isPair(_pool));
         isAlive[gauge] = true;
         gauges[_pool] = gauge;
         gaugeToFees[gauge] = feesVotingReward;

@@ -27,7 +27,6 @@ export async function createPool(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   return nft.mint(liquidityParams)
@@ -56,7 +55,6 @@ export async function createPoolWithMultiplePositions(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   await nft.mint(liquidityParams)
@@ -73,7 +71,6 @@ export async function createPoolWithMultiplePositions(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   await nft.mint(liquidityParams2)
@@ -90,7 +87,6 @@ export async function createPoolWithMultiplePositions(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   return nft.mint(liquidityParams3)
@@ -119,7 +115,6 @@ export async function createPoolWithZeroTickInitialized(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   await nft.mint(liquidityParams)
@@ -136,7 +131,6 @@ export async function createPoolWithZeroTickInitialized(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   await nft.mint(liquidityParams2)
@@ -153,7 +147,6 @@ export async function createPoolWithZeroTickInitialized(
     amount0Min: 0,
     amount1Min: 0,
     deadline: 1,
-    sqrtPriceX96: 0,
   }
 
   return nft.mint(liquidityParams3)

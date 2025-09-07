@@ -11,7 +11,7 @@ contract CollectTest is NonfungiblePositionManagerTest {
         nft.approve(address(gauge), tokenId);
         gauge.deposit({tokenId: tokenId});
 
-        vm.expectRevert();
+        vm.expectRevert(bytes("NA"));
         nft.collect(
             INonfungiblePositionManager.CollectParams({
                 tokenId: tokenId,

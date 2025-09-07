@@ -26,7 +26,8 @@ contract LowFeeLargeLiquidityAroundCurrentPriceStableSwapAllStakedTest is CLPool
 
         stakedPositions.push(Position({tickLower: -tickSpacing, tickUpper: tickSpacing, liquidity: liquidity}));
 
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(pool));
+
         vm.stopPrank();
 
         // set zero unstaked fee

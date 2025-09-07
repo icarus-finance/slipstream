@@ -12,11 +12,11 @@ contract InitializeTest is CLGaugeTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        address gauge = voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)});
+        address gauge = voter.gauges(pool);
         address feesVotingReward = voter.gaugeToFees(gauge);
 
         vm.expectRevert(abi.encodePacked("AI"));
-        CLGauge(payable(gauge)).initialize({
+        CLGauge(gauge).initialize({
             _pool: pool,
             _feesVotingReward: feesVotingReward,
             _rewardToken: address(rewardToken),

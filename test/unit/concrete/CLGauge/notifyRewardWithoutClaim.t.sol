@@ -21,15 +21,15 @@ contract NotifyRewardWithoutClaimTest is CLGaugeTest {
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
         );
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
         feesVotingReward = voter.gaugeToFees(address(gauge));
 
         skipToNextEpoch(0);
     }
 
-    function test_RevertIf_NotNotifyAdmin() public {
+    function test_RevertIf_NotTeam() public {
         vm.startPrank(users.charlie);
-        vm.expectRevert(abi.encodePacked("NA"));
+        vm.expectRevert(abi.encodePacked("NT"));
         gauge.notifyRewardWithoutClaim(TOKEN_1);
     }
 

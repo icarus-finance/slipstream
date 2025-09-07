@@ -14,7 +14,7 @@ contract NotifyRewardAmountWithoutClaimForkTest is BaseForkFixture {
         pool = CLPool(
             poolFactory.createPool({
                 tokenA: address(weth),
-                tokenB: address(dai),
+                tokenB: address(op),
                 tickSpacing: TICK_SPACING_60,
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
@@ -23,7 +23,7 @@ contract NotifyRewardAmountWithoutClaimForkTest is BaseForkFixture {
         vm.prank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
 
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
         feesVotingReward = voter.gaugeToFees(address(gauge));
 
         skipToNextEpoch(0);
@@ -59,8 +59,8 @@ contract NotifyRewardAmountWithoutClaimForkTest is BaseForkFixture {
 
         skipToNextEpoch(0);
 
-        vm.startPrank(users.owner);
-        deal(address(rewardToken), users.owner, 604_800);
+        vm.startPrank(escrow.team());
+        deal(address(rewardToken), escrow.team(), 604_800);
         rewardToken.approve(address(gauge), 604_800);
         gauge.notifyRewardWithoutClaim(604_800); // requires minimum value of 604800
 

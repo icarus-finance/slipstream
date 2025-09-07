@@ -9,7 +9,6 @@ pragma abicoder v2;
 interface ITickLens {
     struct PopulatedTick {
         int24 tick;
-        uint160 sqrtRatioX96;
         int128 liquidityNet;
         uint128 liquidityGross;
     }

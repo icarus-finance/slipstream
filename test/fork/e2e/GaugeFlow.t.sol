@@ -22,7 +22,7 @@ contract GaugeFlowTest is BaseForkFixture {
         pool = CLPool(
             poolFactory.createPool({
                 tokenA: address(weth),
-                tokenB: address(dai),
+                tokenB: address(op),
                 tickSpacing: TICK_SPACING_60,
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
@@ -33,7 +33,7 @@ contract GaugeFlowTest is BaseForkFixture {
         vm.prank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 10_000);
 
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
 
         feesVotingReward = gauge.feesVotingReward();
 
@@ -70,7 +70,7 @@ contract GaugeFlowTest is BaseForkFixture {
 
         skip(1 hours);
 
-        deal(address(dai), users.charlie, TOKEN_1 * 10_000);
+        deal(address(op), users.charlie, TOKEN_1 * 10_000);
         doSwap(TOKEN_1 * 10000, users.charlie, false);
         vm.stopPrank();
 
@@ -84,7 +84,7 @@ contract GaugeFlowTest is BaseForkFixture {
         vm.stopPrank();
     }
 
-    function checkFees(address user, uint256 tokenId, uint256 expectedBalanceWETH, uint256 expectedBalanceDAI)
+    function checkFees(address user, uint256 tokenId, uint256 expectedBalanceWETH, uint256 expectedBalanceOP)
         internal
     {
         vm.startPrank(user);
@@ -94,11 +94,11 @@ contract GaugeFlowTest is BaseForkFixture {
         address[][] memory tokens = new address[][](1);
         tokens[0] = new address[](2);
         tokens[0][0] = address(weth);
-        tokens[0][1] = address(dai);
+        tokens[0][1] = address(op);
         voter.claimFees(feesVotingRewards, tokens, tokenId);
 
         assertEq(weth.balanceOf(user), expectedBalanceWETH);
-        assertEq(dai.balanceOf(user), expectedBalanceDAI);
+        assertEq(op.balanceOf(user), expectedBalanceOP);
         vm.stopPrank();
     }
 
@@ -107,8 +107,8 @@ contract GaugeFlowTest is BaseForkFixture {
         vm.startPrank(users.alice);
         deal(address(weth), users.alice, TOKEN_1 * 1_000);
         weth.approve(address(nftCallee), TOKEN_1 * 1_000);
-        deal(address(dai), users.alice, TOKEN_1 * 1_000_000);
-        dai.approve(address(nftCallee), TOKEN_1 * 1_000_000);
+        deal(address(op), users.alice, TOKEN_1 * 1_000_000);
+        op.approve(address(nftCallee), TOKEN_1 * 1_000_000);
         uint256 tokenIdAlice = nftCallee.mintNewFullRangePositionForUserWith60TickSpacing(
             TOKEN_1 * 1_000, TOKEN_1 * 1_000_000, users.alice
         );
@@ -118,7 +118,7 @@ contract GaugeFlowTest is BaseForkFixture {
 
         //check balances went to staked position
         assertEq(weth.balanceOf(users.alice), 0);
-        assertEq(dai.balanceOf(users.alice), 0);
+        assertEq(op.balanceOf(users.alice), 0);
         assertEq(rewardToken.balanceOf(users.alice), 0);
 
         checkEmissions(users.alice, tokenIdAlice, 0);
@@ -133,15 +133,15 @@ contract GaugeFlowTest is BaseForkFixture {
         vm.startPrank(users.bob);
         deal(address(weth), users.bob, TOKEN_1 * 1_000);
         weth.approve(address(nftCallee), TOKEN_1 * 1_000);
-        deal(address(dai), users.bob, TOKEN_1 * 1_000_000);
-        dai.approve(address(nftCallee), TOKEN_1 * 1_000_000);
+        deal(address(op), users.bob, TOKEN_1 * 1_000_000);
+        op.approve(address(nftCallee), TOKEN_1 * 1_000_000);
         uint256 tokenIdBob =
             nftCallee.mintNewFullRangePositionForUserWith60TickSpacing(TOKEN_1 * 1_000, TOKEN_1 * 1_000_000, users.bob);
         vm.stopPrank();
 
         //check balances went to unstaked position
         assertEq(weth.balanceOf(users.bob), 0);
-        assertEq(dai.balanceOf(users.bob), 0);
+        assertEq(op.balanceOf(users.bob), 0);
 
         checkEmissions(users.alice, tokenIdAlice, 0);
 
@@ -167,7 +167,7 @@ contract GaugeFlowTest is BaseForkFixture {
         );
         //bob has collected rewards from his unstaked position
         assertEq(weth.balanceOf(users.bob), 148499999999999999);
-        assertEq(dai.balanceOf(users.bob), 14849999999999999999);
+        assertEq(op.balanceOf(users.bob), 14849999999999999999);
 
         //bob stakes
         nft.approve(address(gauge), tokenIdBob);
@@ -268,8 +268,8 @@ contract GaugeFlowTest is BaseForkFixture {
         vm.startPrank(largeTokenHolder);
         deal(address(weth), largeTokenHolder, TOKEN_1 * 10_000);
         weth.approve(address(nftCallee), TOKEN_1 * 10_000);
-        deal(address(dai), largeTokenHolder, TOKEN_1 * 100_000_000);
-        dai.approve(address(nftCallee), TOKEN_1 * 100_000_000);
+        deal(address(op), largeTokenHolder, TOKEN_1 * 100_000_000);
+        op.approve(address(nftCallee), TOKEN_1 * 100_000_000);
         uint256 tokenIdLarge = nftCallee.mintNewFullRangePositionForUserWith60TickSpacing(
             TOKEN_1 * 10_000, TOKEN_1 * 100_000_000, largeTokenHolder
         );
@@ -289,11 +289,11 @@ contract GaugeFlowTest is BaseForkFixture {
         gauges[0] = address(gauge);
         voter.distribute(gauges);
         skip(1);
-        assertEq(rewardToken.balanceOf(address(gauge)), 46539477581261455735);
+        assertEq(rewardToken.balanceOf(address(gauge)), 35494346173821420699);
 
-        checkEmissions(users.alice, tokenIdAlice, 1507737680929034050);
-        checkEmissions(users.bob, tokenIdBob, 507737680929034052);
-        checkEmissions(largeTokenHolder, tokenIdLarge, 984600385901960204);
+        checkEmissions(users.alice, tokenIdAlice, 1507737538784370709);
+        checkEmissions(users.bob, tokenIdBob, 507737538784370711);
+        checkEmissions(largeTokenHolder, tokenIdLarge, 984582298351999995);
         checkFees(users.alice, tokenIdVeAlice, 750000000000000002, 75000000000000000002);
         checkFees(users.bob, tokenIdVeBob, 298499999999999999, 29849999999999999999);
 
@@ -301,10 +301,10 @@ contract GaugeFlowTest is BaseForkFixture {
         doSomeSwaps();
         skipToNextEpoch(1 hours + 1);
         minter.updatePeriod();
-        assertEq(rewardToken.balanceOf(address(gauge)), 45539401833501427425);
+        assertEq(rewardToken.balanceOf(address(gauge)), 34494288797900679280);
         gauges[0] = address(gauge);
         voter.distribute(gauges);
-        assertEq(rewardToken.balanceOf(address(gauge)), 90623484638950269386);
+        assertEq(rewardToken.balanceOf(address(gauge)), 68643691509983884531);
         skip(1);
 
         //large token holder creates lock
@@ -323,15 +323,15 @@ contract GaugeFlowTest is BaseForkFixture {
         doSomeSwaps();
         skipToNextEpoch(1 hours + 1);
         minter.updatePeriod();
-        assertEq(rewardToken.balanceOf(address(gauge)), 90623484638950269386);
+        assertEq(rewardToken.balanceOf(address(gauge)), 68643691509983884531);
         gauges[0] = address(gauge);
         voter.distribute(gauges);
-        assertEq(rewardToken.balanceOf(address(gauge)), 1901398256894893448480481);
+        assertEq(rewardToken.balanceOf(address(gauge)), 1504525486055946918765596);
         skip(1);
 
-        checkEmissions(users.alice, tokenIdAlice, 2233368944037661465);
-        checkEmissions(users.bob, tokenIdBob, 1233368944037661467);
-        checkEmissions(largeTokenHolder, tokenIdLarge, 92334748386745869682);
+        checkEmissions(users.alice, tokenIdAlice, 2058201809709345864);
+        checkEmissions(users.bob, tokenIdBob, 1058201809709345866);
+        checkEmissions(largeTokenHolder, tokenIdLarge, 70045190354680546784);
         checkFees(users.alice, tokenIdVeAlice, 900002985517110672, 90000298551711067029);
         checkFees(users.bob, tokenIdVeBob, 448502985517110669, 44850298551711067026);
         checkFees(largeTokenHolder, tokenIdVeLarge, 299994028965778659, 29999402896577865944);
@@ -340,15 +340,15 @@ contract GaugeFlowTest is BaseForkFixture {
         doSomeSwaps();
         skipToNextEpoch(1 hours + 1);
         minter.updatePeriod();
-        assertEq(rewardToken.balanceOf(address(gauge)), 1901304470883980485355969);
+        assertEq(rewardToken.balanceOf(address(gauge)), 1504454339937050388268502);
         gauges[0] = address(gauge);
         voter.distribute(gauges);
-        assertEq(rewardToken.balanceOf(address(gauge)), 3783599027960132473488758);
+        assertEq(rewardToken.balanceOf(address(gauge)), 2993866613877842949811750);
         skip(1);
 
-        checkEmissions(users.alice, tokenIdAlice, 14712830644710923387872);
-        checkEmissions(users.bob, tokenIdBob, 14711830644710923387874);
-        checkEmissions(largeTokenHolder, tokenIdLarge, 1871978741981844732499469);
+        checkEmissions(users.alice, tokenIdAlice, 11642183312494374294651);
+        checkEmissions(users.bob, tokenIdBob, 11641183312494374294653);
+        checkEmissions(largeTokenHolder, tokenIdLarge, 1481246612309148420064141);
         checkFees(users.alice, tokenIdVeAlice, 900005971034221342, 90000597103422134056);
         checkFees(users.bob, tokenIdVeBob, 448505971034221339, 44850597103422134053);
         checkFees(largeTokenHolder, tokenIdVeLarge, 599988057931557318, 59998805793155731888);

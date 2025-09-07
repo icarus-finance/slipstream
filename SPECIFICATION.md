@@ -1,4 +1,4 @@
-# Slipstream Specification
+# Velodrome Finance Concentrated Liquidity Specification
 
 Concentrated liquidity pool and associated contracts adapted from UniswapV3's concentrated
 liquidity implementation to work within the Velodrome ecosystem. 
@@ -53,8 +53,7 @@ The pools are standard UniswapV3Pools that have been modified to support gauges.
 ship with the following tick spacings, with support for additional tick spacings available. 
 Note that fees are not particularly important as they can be modified with the custom swap fee modules.
 
-Pools are created independently of gauges, and come initialized with a price. Pools without a gauge
-will not have their `gauge` or `nft` parameters set.
+Pools are created alongside gauges, and come initialized with a price. Pools cannot exist in an uninitialized state.
 
 The tick spacing / fee combinations are listed as follows:
 - ts: 1 | fee: 1 bps
@@ -65,7 +64,7 @@ The tick spacing / fee combinations are listed as follows:
 
 ### Gauges
 
-The concentrated liquidity pools that are created will be incentivizable like any other pool in the Velodrome ecosystem.
+The concentrated liquidity pools that are created will be incentivizable like any other pool on Velodrome.
 Gauge rewards are distributed over time and only in the active tick. Distributing over time is similar to V2
 and encourages persistent liquidity. Incentivizing only the active tick means we maximize capital efficiency 
 by only rewarding useful liquidity. 
@@ -109,7 +108,6 @@ Decrease staked liquidity (`decreaseStakedLiquidity`):
 - It is possible to collect the entire position in this way.
 
 It is possible for a permissioned user to add rewards to a gauge (`notifyRewardAmountWithoutClaim`):
-- The permissioned user is an admin on the gauge factory corresponding to the gauge.
 - This adds rewards only (i.e. fees are not collected). 
 - The amount notified is added to existing rewards that are being distributed.
 
@@ -117,6 +115,10 @@ As concentrated liquidity is limited to certain tick ranges, it is possible for 
 - Rewards roll based on the amount of seconds that the pool spent in a tick range with no active liquidity. 
 - Rewards roll on the next call to a notify function. If neither notify function is called within a given epoch, then the rewards remain stuck until the next time it is called.
 - This does not address rewards stuck in the gauge from rounding errors.
+
+Other:
+- Gauges are created atomically with a pool (i.e. on `factory.createPool` as opposed to `voter.createGauge`).
+- Gauges are created using deterministic clones in a manner similar to pools.
 
 ### Swap Fee Module
 
@@ -133,15 +135,17 @@ The UniswapV3Factory supports an unstaked liquidity fee module, with pools fetch
 LPers dynamically from this module. The factory will ship with a custom fee module similar to that used for the 
 pool fee module described above. 
 
-The custom unstaked liquidity fee module will have a default fee of 10% and a maximum fee of 50%. Fees are set 
+The custom unstaked liquidity fee module will have a default fee of 10% and a maximum fee of 20%. Fees are set 
 using pips instead of bips. This is consistent with UniswapV3 but not consistent with Velodrome's existing fee mechanisms.
-The default unstaked liquidity fee is mutable.
+The default fee will be settable.
 
 ### Oracle
 
-The oracle behaves identically to the UniswapV3 oracle. An observation is written at most once per block and can be triggered
-by a swap that crosses ticks or the provisioning of liquidity.
+The oracle has been modified to provide a consistent experience across chains with different block times. Observations
+can only be written at most once every 15 seconds. When the observation timestamp overflows, a new observation will be
+written regardless of the time that has passed (i.e. may be written before 15 seconds has passed).
 
 ### UniversalRouter
 
 UniswapV3's universal router will be modified to support the current V3 implementation as well as the VelodromeV2 router. 
+Only volatile pools will be supported on VelodromeV2 pools.

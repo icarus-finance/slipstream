@@ -73,7 +73,6 @@ describe('TickLens', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-        sqrtPriceX96: 0,
       }
 
       return nft.mint(liquidityParams)
@@ -92,7 +91,6 @@ describe('TickLens', () => {
         amount1Min: 0,
         recipient: wallets[0].address,
         deadline: 1,
-        sqrtPriceX96: 0,
       }
 
       const { liquidity } = await nft.callStatic.mint(mintParams)
@@ -119,24 +117,6 @@ describe('TickLens', () => {
       const intermediate = BigNumber.from(tick).div(tickSpacing)
       // see https://docs.soliditylang.org/en/v0.7.6/types.html#shifts
       return intermediate.lt(0) ? intermediate.add(1).div(BigNumber.from(2).pow(8)).sub(1) : intermediate.shr(8)
-    }
-
-    async function estimateGasCostsFetchingByTick(wordCount: number) {
-      // populate `wordCount` words
-      for (let i = 0; i < 128 * wordCount; i++) {
-        await mint(
-          i * TICK_SPACINGS[FeeAmount.MEDIUM],
-          (256 * wordCount - 1 - i) * TICK_SPACINGS[FeeAmount.MEDIUM],
-          100
-        )
-      }
-
-      // fetch all populated ticks
-      const ticks = await tickLens.getPopulatedTicks(poolAddress, 0, wordCount)
-      // verify that all words were fully populated
-      expect(ticks.length).to.be.eq(256 * wordCount)
-
-      await snapshotGasCost(tickLens.getGasCostOfGetPopulatedTicks(poolAddress, 0, wordCount))
     }
 
     it('works for min/max', async () => {
@@ -242,21 +222,6 @@ describe('TickLens', () => {
           getTickBitmapIndex(0, TICK_SPACINGS[FeeAmount.MEDIUM])
         )
       )
-    }).timeout(300_000)
-    it('gas costs by tick 2 fully populated words', async () => {
-      await estimateGasCostsFetchingByTick(2)
-    }).timeout(300_000)
-    it('gas costs by tick 3 fully populated words', async () => {
-      await estimateGasCostsFetchingByTick(3)
-    }).timeout(300_000)
-    it('gas costs by tick 4 fully populated words', async () => {
-      await estimateGasCostsFetchingByTick(4)
-    }).timeout(300_000)
-    it('gas costs by tick 5 fully populated words', async () => {
-      await estimateGasCostsFetchingByTick(5)
-    }).timeout(300_000)
-    it('gas costs by tick 6 fully populated words', async () => {
-      await estimateGasCostsFetchingByTick(6)
     }).timeout(300_000)
   })
 })

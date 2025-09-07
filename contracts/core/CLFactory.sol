@@ -4,7 +4,6 @@ pragma solidity =0.7.6;
 import "./interfaces/ICLFactory.sol";
 import "./interfaces/fees/IFeeModule.sol";
 import "./interfaces/IVoter.sol";
-import "./interfaces/IFactoryRegistry.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@nomad-xyz/src/ExcessivelySafeCall.sol";
 import "./CLPool.sol";
@@ -19,8 +18,6 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     address public immutable override poolImplementation;
     /// @inheritdoc ICLFactory
-    IFactoryRegistry public immutable override factoryRegistry;
-    /// @inheritdoc ICLFactory
     address public override owner;
     /// @inheritdoc ICLFactory
     address public override swapFeeManager;
@@ -31,15 +28,17 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     address public override unstakedFeeModule;
     /// @inheritdoc ICLFactory
-    uint24 public override defaultUnstakedFee;
+    address public override nft;
+    /// @inheritdoc ICLFactory
+    address public override gaugeFactory;
+    /// @inheritdoc ICLFactory
+    address public override gaugeImplementation;
     /// @inheritdoc ICLFactory
     mapping(int24 => uint24) public override tickSpacingToFee;
     /// @inheritdoc ICLFactory
     mapping(address => mapping(address => mapping(int24 => address))) public override getPool;
     /// @dev Used in VotingEscrow to determine if a contract is a valid pool
     mapping(address => bool) private _isPool;
-    /// @inheritdoc ICLFactory
-    address[] public override allPools;
 
     int24[] private _tickSpacings;
 
@@ -48,13 +47,10 @@ contract CLFactory is ICLFactory {
         swapFeeManager = msg.sender;
         unstakedFeeManager = msg.sender;
         voter = IVoter(_voter);
-        factoryRegistry = IVoter(_voter).factoryRegistry();
         poolImplementation = _poolImplementation;
-        defaultUnstakedFee = 100_000;
         emit OwnerChanged(address(0), msg.sender);
         emit SwapFeeManagerChanged(address(0), msg.sender);
         emit UnstakedFeeManagerChanged(address(0), msg.sender);
-        emit DefaultUnstakedFeeChanged(0, 100_000);
 
         enableTickSpacing(1, 100);
         enableTickSpacing(50, 500);
@@ -74,23 +70,24 @@ contract CLFactory is ICLFactory {
         require(token0 != address(0));
         require(tickSpacingToFee[tickSpacing] != 0);
         require(getPool[token0][token1][tickSpacing] == address(0));
-        pool = Clones.cloneDeterministic({
-            master: poolImplementation,
-            salt: keccak256(abi.encode(token0, token1, tickSpacing))
-        });
+        bytes32 _salt = keccak256(abi.encode(token0, token1, tickSpacing));
+        pool = Clones.cloneDeterministic({master: poolImplementation, salt: _salt});
+        address gauge =
+            Clones.predictDeterministicAddress({master: gaugeImplementation, salt: _salt, deployer: gaugeFactory});
         CLPool(pool).initialize({
             _factory: address(this),
             _token0: token0,
             _token1: token1,
             _tickSpacing: tickSpacing,
-            _factoryRegistry: address(factoryRegistry),
+            _gauge: gauge,
+            _nft: nft,
             _sqrtPriceX96: sqrtPriceX96
         });
-        allPools.push(pool);
         _isPool[pool] = true;
         getPool[token0][token1][tickSpacing] = pool;
         // populate mapping in the reverse direction, deliberate choice to avoid the cost of comparing addresses
         getPool[token1][token0][tickSpacing] = pool;
+        voter.createGauge(address(this), pool);
         emit PoolCreated(token0, token1, tickSpacing, pool);
     }
 
@@ -140,15 +137,6 @@ contract CLFactory is ICLFactory {
     }
 
     /// @inheritdoc ICLFactory
-    function setDefaultUnstakedFee(uint24 _defaultUnstakedFee) external override {
-        require(msg.sender == unstakedFeeManager);
-        require(_defaultUnstakedFee <= 500_000);
-        uint24 oldUnstakedFee = defaultUnstakedFee;
-        defaultUnstakedFee = _defaultUnstakedFee;
-        emit DefaultUnstakedFeeChanged(oldUnstakedFee, _defaultUnstakedFee);
-    }
-
-    /// @inheritdoc ICLFactory
     function getSwapFee(address pool) external view override returns (uint24) {
         if (swapFeeModule != address(0)) {
             (bool success, bytes memory data) = swapFeeModule.excessivelySafeStaticCall(
@@ -166,8 +154,7 @@ contract CLFactory is ICLFactory {
 
     /// @inheritdoc ICLFactory
     function getUnstakedFee(address pool) external view override returns (uint24) {
-        address gauge = voter.gauges(pool);
-        if (!voter.isAlive(gauge) || gauge == address(0)) {
+        if (!IVoter(voter).isAlive(ICLPool(pool).gauge())) {
             return 0;
         }
         if (unstakedFeeModule != address(0)) {
@@ -181,7 +168,8 @@ contract CLFactory is ICLFactory {
                 }
             }
         }
-        return defaultUnstakedFee;
+        // Default unstaked fee is 10%
+        return 100_000;
     }
 
     /// @inheritdoc ICLFactory
@@ -205,12 +193,24 @@ contract CLFactory is ICLFactory {
     }
 
     /// @inheritdoc ICLFactory
-    function allPoolsLength() external view override returns (uint256) {
-        return allPools.length;
+    function isPair(address pool) external view override returns (bool) {
+        return _isPool[pool];
     }
 
     /// @inheritdoc ICLFactory
-    function isPool(address pool) external view override returns (bool) {
-        return _isPool[pool];
+    function setGaugeFactory(address _gaugeFactory, address _gaugeImplementation) external override {
+        require(gaugeFactory == address(0), "AI");
+        require(owner == msg.sender, "NA");
+        require(_gaugeFactory != address(0) && _gaugeImplementation != address(0));
+        gaugeFactory = _gaugeFactory;
+        gaugeImplementation = _gaugeImplementation;
+    }
+
+    /// @inheritdoc ICLFactory
+    function setNonfungiblePositionManager(address _nft) external override {
+        require(nft == address(0), "AI");
+        require(owner == msg.sender, "NA");
+        require(_nft != address(0));
+        nft = _nft;
     }
 }

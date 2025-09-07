@@ -18,7 +18,7 @@ contract NonfungiblePositionManagerTest is BaseFixture {
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
         );
-        gauge = CLGauge(payable(voter.createGauge({_poolFactory: address(poolFactory), _pool: address(pool)})));
+        gauge = CLGauge(voter.gauges(address(pool)));
 
         vm.startPrank(users.alice);
         token0.approve(address(gauge), type(uint256).max);
@@ -28,7 +28,5 @@ contract NonfungiblePositionManagerTest is BaseFixture {
     function test_InitialState() public {
         assertEq(nft.factory(), address(poolFactory));
         assertEq(nft.WETH9(), address(weth));
-        assertEq(nft.name(), "Slipstream Position NFT v1");
-        assertEq(nft.symbol(), "CL-POS");
     }
 }

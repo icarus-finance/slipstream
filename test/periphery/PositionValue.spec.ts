@@ -98,7 +98,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const swapAmount = expandTo18Decimals(1_000)
@@ -161,7 +160,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const principal = await positionValue.principal(nft.address, 1, sqrtRatioX96)
@@ -182,7 +180,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const principal = await positionValue.principal(nft.address, 1, sqrtRatioX96)
@@ -203,7 +200,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const principal = await positionValue.principal(nft.address, 1, sqrtRatioX96)
@@ -224,7 +220,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const principal = await positionValue.principal(nft.address, 1, sqrtRatioX96)
@@ -245,7 +240,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       const principal = await positionValue.principal(nft.address, 1, sqrtRatioX96)
@@ -266,7 +260,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
 
       await snapshotGasCost(positionValue.principalGas(nft.address, 1, sqrtRatioX96))
@@ -292,7 +285,6 @@ describe('PositionValue', async () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 10,
-        sqrtPriceX96: 0,
       })
     })
 
@@ -310,7 +302,6 @@ describe('PositionValue', async () => {
           amount0Min: 0,
           amount1Min: 0,
           deadline: 10,
-          sqrtPriceX96: 0,
         })
 
         const swapAmount = expandTo18Decimals(1_000)
@@ -401,7 +392,6 @@ describe('PositionValue', async () => {
           amount0Min: 0,
           amount1Min: 0,
           deadline: 10,
-          sqrtPriceX96: 0,
         })
 
         await tokens[0].approve(router.address, constants.MaxUint256)
@@ -458,7 +448,6 @@ describe('PositionValue', async () => {
           amount0Min: 0,
           amount1Min: 0,
           deadline: 10,
-          sqrtPriceX96: 0,
         })
 
         await tokens[0].approve(router.address, constants.MaxUint256)

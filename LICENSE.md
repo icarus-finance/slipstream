@@ -15,8 +15,8 @@ Licensed Work:        Velodrome Smart Contracts
 Additional Use Grant: Any uses listed and defined at
                       v2-license-grants.velodrome.eth
 
-Change Date:          The earlier of 2026-01-01 or a date specified at
-                      slipstream-license-date.velodrome.eth
+Change Date:          The earlier of 2025-06-01 or a date specified at
+                      v2-license-date.velodrome.eth
 
 Change License:       GNU General Public License v2.0 or later
 
