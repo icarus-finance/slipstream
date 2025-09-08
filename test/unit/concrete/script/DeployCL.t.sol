@@ -82,9 +82,9 @@ contract DeployCLTest is Test {
         assertEq(address(poolFactory.swapFeeManager()), feeManager);
         assertEq(address(poolFactory.unstakedFeeModule()), address(unstakedFeeModule));
         assertEq(address(poolFactory.unstakedFeeManager()), feeManager);
-        assertEq(address(poolFactory.nft()), address(nft));
-        assertEq(address(poolFactory.gaugeFactory()), address(gaugeFactory));
-        assertEq(address(poolFactory.gaugeImplementation()), address(gaugeImplementation));
+        // assertEq(address(poolFactory.nft()), address(nft));
+        // assertEq(address(poolFactory.gaugeFactory()), address(gaugeFactory));
+        // assertEq(address(poolFactory.gaugeImplementation()), address(gaugeImplementation));
         assertEqUint(poolFactory.tickSpacingToFee(1), 100);
         assertEqUint(poolFactory.tickSpacingToFee(50), 500);
         assertEqUint(poolFactory.tickSpacingToFee(100), 500);

@@ -1,9 +1,8 @@
-# Velodrome Concentrated Liquidity Contracts
+# Icarus Concentrated Liquidity Contracts
 
-This repository contains the smart contracts for the Velodrome Concentrated Liquidity contracts. It contains
+This repository contains the smart contracts for the Icarus Concentrated Liquidity contracts. It contains
 the core concentrated liquidity contracts, adapted from UniswapV3's core contracts. It contains the higher level
-periphery contracts, adapted from UniswapV3's periphery contracts. It also contains gauges designed to operate
-within the Velodrome ecosystem.  
+periphery contracts, adapted from UniswapV3's periphery contracts. It also contains gauge contracts, adapted from Aerodrome slipstream contracts.  
 
 ## Installation
 
@@ -28,8 +27,6 @@ echidna test/invariants/E2E_swap.sol --config test/invariants/E2E_swap.config.ya
 
 ## Licensing
 
-As this repository depends on the UniswapV3 `v3-core` and `v3-periphery` repository, the contracts in the 
-`contracts/core` and  `contracts/periphery` folders are licensed under `GPL-2.0-or-later` or alternative 
+As this repository depends on the UniswapV3 `v3-core` and `v3-periphery` repository, as well as Aerodrome Finance `slipstream` repository, the contracts in the 
+`contracts/core`, `contracts/periphery` and `contracts/gauges` folders are licensed under `GPL-2.0-or-later` or alternative 
 licenses (as indicated in their SPDX headers).
-
-Files in the `contracts/gauge` folder are licensed under the Business Source License 1.1 (`BUSL-1.1`).

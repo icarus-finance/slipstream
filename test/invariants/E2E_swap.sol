@@ -10,7 +10,7 @@ import {
     INonfungiblePositionManager, NonfungiblePositionManager
 } from "contracts/periphery/NonfungiblePositionManager.sol";
 import {IVoter} from "contracts/test/MockVoter.sol";
-import {VelodromeTimeLibrary} from "contracts/libraries/VelodromeTimeLibrary.sol";
+import {ProtocolTimeLibrary} from "contracts/libraries/ProtocolTimeLibrary.sol";
 
 contract E2E_swap {
     SetupTokens tokens;
@@ -97,7 +97,7 @@ contract E2E_swap {
         uint256 newTime = block.timestamp;
 
         // if we arrive in a new epoch notify
-        if (VelodromeTimeLibrary.epochStart(currentTime) != VelodromeTimeLibrary.epochStart(newTime)) {
+        if (ProtocolTimeLibrary.epochStart(currentTime) != ProtocolTimeLibrary.epochStart(newTime)) {
             uint256 gaugeBalanceBefore = rewardToken.balanceOf(address(gauge));
 
             hevm.prank(address(voter));

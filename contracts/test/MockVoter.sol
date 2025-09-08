@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
@@ -27,7 +27,7 @@ contract MockVoter is IVoter {
     mapping(address => address) public override gaugeToBribes;
 
     IERC20 internal immutable rewardToken;
-    IFactoryRegistry public immutable factoryRegistry;
+    IFactoryRegistry public immutable override factoryRegistry;
     IVotingEscrow public immutable override ve;
     address public immutable override emergencyCouncil;
 
@@ -57,7 +57,7 @@ contract MockVoter is IVoter {
 
         address gauge =
             CLGaugeFactory(gaugeFactory).createGauge(forwarder, _pool, feesVotingReward, address(rewardToken), true);
-        require(CLFactory(_poolFactory).isPair(_pool));
+        require(CLFactory(_poolFactory).isPool(_pool));
         isAlive[gauge] = true;
         gauges[_pool] = gauge;
         gaugeToFees[gauge] = feesVotingReward;

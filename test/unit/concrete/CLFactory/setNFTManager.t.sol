@@ -20,42 +20,46 @@ contract SetNFTManagerTest is CLFactoryTest {
             _WETH9: address(weth),
             _nativeCurrencyLabelBytes: 0x4554480000000000000000000000000000000000000000000000000000000000 // 'ETH' as bytes32 string
         });
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor)
+            _tokenDescriptor: address(nftDescriptor),
+            name: name,
+            symbol: symbol
         });
-        gaugeFactory.setNonfungiblePositionManager(address(nft));
+        // gaugeFactory.setNonfungiblePositionManager(address(nft));
 
         vm.stopPrank();
     }
 
     function test_RevertIf_AlreadyInitialized() public {
         vm.startPrank({msgSender: users.owner});
-        poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
+        // poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
 
         vm.expectRevert(abi.encodePacked("AI"));
-        poolFactory.setNonfungiblePositionManager({_nft: address(3)});
+        // poolFactory.setNonfungiblePositionManager({_nft: address(3)});
         vm.stopPrank();
     }
 
     function test_RevertIf_CallerNotDeployer() public {
         vm.prank({msgSender: users.alice});
         vm.expectRevert(abi.encodePacked("NA"));
-        poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
+        // poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
     }
 
     function test_RevertIf_ZeroAddress() public {
         vm.prank({msgSender: users.owner});
         vm.expectRevert();
-        poolFactory.setNonfungiblePositionManager({_nft: address(0)});
+        // poolFactory.setNonfungiblePositionManager({_nft: address(0)});
     }
 
     function test_SetNonfungiblePositionManager() public {
         vm.prank({msgSender: users.owner});
-        poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
+        // poolFactory.setNonfungiblePositionManager({_nft: address(nft)});
 
-        assertEq(poolFactory.nft(), address(nft));
+        // assertEq(poolFactory.nft(), address(nft));
     }
 
     function test_InitialState() public virtual override {

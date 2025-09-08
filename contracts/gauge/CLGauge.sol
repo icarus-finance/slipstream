@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
@@ -15,7 +15,7 @@ import {EnumerableSet} from "contracts/libraries/EnumerableSet.sol";
 import {SafeCast} from "contracts/gauge/libraries/SafeCast.sol";
 import {FullMath} from "contracts/core/libraries/FullMath.sol";
 import {FixedPoint128} from "contracts/core/libraries/FixedPoint128.sol";
-import {VelodromeTimeLibrary} from "contracts/libraries/VelodromeTimeLibrary.sol";
+import {ProtocolTimeLibrary} from "contracts/libraries/ProtocolTimeLibrary.sol";
 import {IReward} from "contracts/gauge/interfaces/IReward.sol";
 
 contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
@@ -342,7 +342,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
 
     function _notifyRewardAmount(address _sender, uint256 _amount) internal {
         uint256 timestamp = block.timestamp;
-        uint256 timeUntilNext = VelodromeTimeLibrary.epochNext(timestamp) - timestamp;
+        uint256 timeUntilNext = ProtocolTimeLibrary.epochNext(timestamp) - timestamp;
         pool.updateRewardsGrowthGlobal();
         uint256 nextPeriodFinish = timestamp + timeUntilNext;
 
@@ -358,7 +358,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
             rewardRate = (_amount + _leftover) / timeUntilNext;
             pool.syncReward({rewardRate: rewardRate, rewardReserve: _amount + _leftover, periodFinish: nextPeriodFinish});
         }
-        rewardRateByEpoch[VelodromeTimeLibrary.epochStart(timestamp)] = rewardRate;
+        rewardRateByEpoch[ProtocolTimeLibrary.epochStart(timestamp)] = rewardRate;
         require(rewardRate != 0, "ZRR");
 
         // Ensure the provided reward amount is not more than the balance in the contract.
@@ -379,14 +379,14 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
             uint256 _fees1 = fees1 + claimed1;
             address _token0 = token0;
             address _token1 = token1;
-            if (_fees0 > VelodromeTimeLibrary.WEEK) {
+            if (_fees0 > ProtocolTimeLibrary.WEEK) {
                 fees0 = 0;
                 IERC20(_token0).safeIncreaseAllowance(feesVotingReward, _fees0);
                 IReward(feesVotingReward).notifyRewardAmount(_token0, _fees0);
             } else {
                 fees0 = _fees0;
             }
-            if (_fees1 > VelodromeTimeLibrary.WEEK) {
+            if (_fees1 > ProtocolTimeLibrary.WEEK) {
                 fees1 = 0;
                 IERC20(_token1).safeIncreaseAllowance(feesVotingReward, _fees1);
                 IReward(feesVotingReward).notifyRewardAmount(_token1, _fees1);

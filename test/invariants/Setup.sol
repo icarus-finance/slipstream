@@ -123,21 +123,26 @@ contract SetupCL {
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
+
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
 
         // deploy nft manager
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(100)
+            _tokenDescriptor: address(100),
+            name: name,
+            symbol: symbol
         });
 
         // set nft manager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        poolFactory.setNonfungiblePositionManager(address(nft));
+        // poolFactory.setNonfungiblePositionManager(address(nft));
 
         factoryRegistry.approve({
             poolFactory: address(poolFactory),
@@ -276,7 +281,8 @@ contract CLMinter is ERC721Holder {
             amount1Desired: amount1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: block.timestamp
+            deadline: block.timestamp,
+            sqrtPriceX96: 0 // TODO
         });
 
         (tokenId,,,) = nft.mint(params);
@@ -305,7 +311,8 @@ contract CLMinter is ERC721Holder {
             amount1Desired: amount1,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: block.timestamp
+            deadline: block.timestamp,
+            sqrtPriceX96: 0 // TODO
         });
 
         (tokenId,,,) = nft.mint(params);

@@ -82,10 +82,13 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         // deploy gauges and associated contracts
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
+
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
 
         // deploy nft manager and descriptor
         nftDescriptor = new NonfungibleTokenPositionDescriptor({
@@ -95,12 +98,14 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor)
+            _tokenDescriptor: address(nftDescriptor),
+            name: name,
+            symbol: symbol
         });
 
         // set nftmanager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        poolFactory.setNonfungiblePositionManager(address(nft));
+        // poolFactory.setNonfungiblePositionManager(address(nft));
         vm.stopPrank();
 
         // approve gauge in factory registry

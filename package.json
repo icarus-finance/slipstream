@@ -1,20 +1,21 @@
 {
-  "name": "@velodrome-finance/concentrated-liquidity",
+  "name": "@icarus-finance/slipstream",
   "description": "Core smart contracts of CL",
-  "license": "BUSL-1.1",
+  "license": "GPL-2.0-only",
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.0.1",
-  "homepage": "https://velodrome.finance",
+  "version": "1.0.0",
+  "homepage": "https://icarus.finance",
   "keywords": [
     "uniswap",
     "core",
-    "v3"
+    "v3",
+    "slipstream"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/velodrome-finance/concentrated-liquidity"
+    "url": "https://github.com/icarus-finance"
   },
   "files": [
     "contracts/core/interfaces",

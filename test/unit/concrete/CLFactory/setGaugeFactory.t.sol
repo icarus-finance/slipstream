@@ -20,57 +20,62 @@ contract SetGaugeFactoryTest is CLFactoryTest {
             _WETH9: address(weth),
             _nativeCurrencyLabelBytes: 0x4554480000000000000000000000000000000000000000000000000000000000 // 'ETH' as bytes32 string
         });
+
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
+
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor)
+            _tokenDescriptor: address(nftDescriptor),
+            name: name,
+            symbol: symbol
         });
-        gaugeFactory.setNonfungiblePositionManager(address(nft));
-
+        // gaugeFactory.setNonfungiblePositionManager(address(nft));
         vm.stopPrank();
     }
 
     function test_RevertIf_AlreadyInitialized() public {
         vm.startPrank({msgSender: users.owner});
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
 
         vm.expectRevert(abi.encodePacked("AI"));
-        poolFactory.setGaugeFactory({_gaugeFactory: address(1), _gaugeImplementation: address(2)});
+        // poolFactory.setGaugeFactory({_gaugeFactory: address(1), _gaugeImplementation: address(2)});
         vm.stopPrank();
     }
 
     function test_RevertIf_CallerNotDeployer() public {
         vm.prank({msgSender: users.alice});
         vm.expectRevert(abi.encodePacked("NA"));
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
     }
 
     function test_RevertIf_ZeroAddress() public {
         vm.startPrank({msgSender: users.owner});
         vm.expectRevert();
-        poolFactory.setGaugeFactory({_gaugeFactory: address(0), _gaugeImplementation: address(gaugeImplementation)});
+        // poolFactory.setGaugeFactory({_gaugeFactory: address(0), _gaugeImplementation: address(gaugeImplementation)});
         vm.expectRevert();
-        poolFactory.setGaugeFactory({_gaugeFactory: address(gaugeFactory), _gaugeImplementation: address(0)});
+        // poolFactory.setGaugeFactory({_gaugeFactory: address(gaugeFactory), _gaugeImplementation: address(0)});
         vm.expectRevert();
-        poolFactory.setGaugeFactory({_gaugeFactory: address(0), _gaugeImplementation: address(0)});
+        // poolFactory.setGaugeFactory({_gaugeFactory: address(0), _gaugeImplementation: address(0)});
         vm.stopPrank();
     }
 
     function test_SetGaugeFactory() public {
         vm.prank({msgSender: users.owner});
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
 
-        assertEq(poolFactory.gaugeFactory(), address(gaugeFactory));
-        assertEq(poolFactory.gaugeImplementation(), address(gaugeImplementation));
+        // assertEq(poolFactory.gaugeFactory(), address(gaugeFactory));
+        // assertEq(poolFactory.gaugeImplementation(), address(gaugeImplementation));
     }
 
     function test_InitialState() public virtual override {

@@ -10,10 +10,15 @@ contract SetNFTManagerTest is CLGaugeFactoryTest {
         vm.startPrank({msgSender: users.owner});
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
+
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor)
+            _tokenDescriptor: address(nftDescriptor),
+            name: name,
+            symbol: symbol
         });
         vm.stopPrank();
     }

@@ -17,7 +17,8 @@ contract MintTest is NonfungiblePositionManagerTest {
             amount1Desired: 15,
             amount0Min: 0,
             amount1Min: 0,
-            deadline: 10
+            deadline: 10,
+            sqrtPriceX96: 0 // TODO
         });
         nft.mint(params);
 

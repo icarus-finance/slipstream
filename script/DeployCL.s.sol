@@ -71,10 +71,14 @@ contract DeployCL is Script {
         gaugeFactory = new CLGaugeFactory({_voter: voter, _implementation: address(gaugeImplementation)});
 
         // set parameters on pool factory
-        poolFactory.setGaugeFactory({
-            _gaugeFactory: address(gaugeFactory),
-            _gaugeImplementation: address(gaugeImplementation)
-        });
+        // poolFactory.setGaugeFactory({
+        //     _gaugeFactory: address(gaugeFactory),
+        //     _gaugeImplementation: address(gaugeImplementation)
+        // });
+
+        string memory name = "Icarus CL Pool";
+        string memory symbol = "IRS_CL_POOL";
+        
 
         // deploy nft contracts
         nftDescriptor =
@@ -82,12 +86,14 @@ contract DeployCL is Script {
         nft = new NonfungiblePositionManager({
             _factory: address(poolFactory),
             _WETH9: address(weth),
-            _tokenDescriptor: address(nftDescriptor)
+            _tokenDescriptor: address(nftDescriptor),
+            name: name,
+            symbol: symbol
         });
 
         // set nft manager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        poolFactory.setNonfungiblePositionManager(address(nft));
+        // poolFactory.setNonfungiblePositionManager(address(nft));
 
         // deploy fee modules
         swapFeeModule = new CustomSwapFeeModule({_factory: address(poolFactory)});
