@@ -10,7 +10,7 @@ contract CustomUnstakedFeeModule is ICustomFeeModule {
     /// @inheritdoc ICustomFeeModule
     mapping(address => uint24) public override customFee;
 
-    uint256 public constant MAX_FEE = 200_000; // 20%
+    uint256 public constant MAX_FEE = 500_000; // 50%
     // Override to indicate there is custom 0% fee - as a 0 value in the customFee mapping indicates
     // that no custom fee rate has been set
     uint256 public constant ZERO_FEE_INDICATOR = 420;
@@ -23,7 +23,7 @@ contract CustomUnstakedFeeModule is ICustomFeeModule {
     function setCustomFee(address pool, uint24 fee) external override {
         require(msg.sender == factory.unstakedFeeManager());
         require(fee <= MAX_FEE || fee == ZERO_FEE_INDICATOR);
-        require(factory.isPair(pool));
+        require(factory.isPool(pool));
 
         customFee[pool] = fee;
         emit SetCustomFee(pool, fee);

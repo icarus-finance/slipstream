@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.7.6;
 
-library VelodromeTimeLibrary {
+library ProtocolTimeLibrary {
     uint256 internal constant WEEK = 7 days;
 
     /// @dev Returns start of epoch based on current timestamp
