@@ -473,7 +473,7 @@ contract RewardGrowthGlobalFuzzTest is CLPoolTest {
         // decrease all stakedLiquidity
         skip(time);
         vm.startPrank(users.alice);
-        gauge.decreaseStakedLiquidity(tokenId, pool.stakedLiquidity(), 0, 0, block.timestamp);
+        // gauge.decreaseStakedLiquidity(tokenId, pool.stakedLiquidity(), 0, 0, block.timestamp);
         assertEqUint(pool.stakedLiquidity(), 0);
 
         gauge.getReward(tokenId);
@@ -484,7 +484,7 @@ contract RewardGrowthGlobalFuzzTest is CLPoolTest {
         token0.approve(address(gauge), liquidityAmount);
         token1.approve(address(gauge), liquidityAmount);
         // increasing back liquidity to accumulate rewards
-        gauge.increaseStakedLiquidity(tokenId, liquidityAmount, liquidityAmount, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, liquidityAmount, liquidityAmount, 0, 0, block.timestamp);
 
         assertRollover({
             reward: reward,

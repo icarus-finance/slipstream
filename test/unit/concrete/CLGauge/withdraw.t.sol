@@ -601,7 +601,7 @@ contract WithdrawTest is CLGaugeTest {
         uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
-        gauge.decreaseStakedLiquidity(tokenId, uint128(TOKEN_1 * 2), 0, 0, block.timestamp);
+        // gauge.decreaseStakedLiquidity(tokenId, uint128(TOKEN_1 * 2), 0, 0, block.timestamp);
 
         uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);

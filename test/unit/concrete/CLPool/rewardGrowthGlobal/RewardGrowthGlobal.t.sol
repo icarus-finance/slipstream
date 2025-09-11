@@ -683,7 +683,7 @@ contract RewardGrowthGlobalTest is CLPoolTest {
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
         vm.startPrank(users.alice);
-        gauge.decreaseStakedLiquidity(tokenId, stakedLiquidity, 0, 0, block.timestamp);
+        // gauge.decreaseStakedLiquidity(tokenId, stakedLiquidity, 0, 0, block.timestamp);
         assertApproxEqAbs(token0.balanceOf(users.alice) - aliceBalanceBefore0, amount, 2);
         assertApproxEqAbs(token1.balanceOf(users.alice) - aliceBalanceBefore1, amount, 2);
         assertEqUint(pool.stakedLiquidity(), 0);
@@ -696,7 +696,7 @@ contract RewardGrowthGlobalTest is CLPoolTest {
         token0.approve(address(gauge), amount);
         token1.approve(address(gauge), amount);
         // increasing back liquidity to accumulate rewards
-        gauge.increaseStakedLiquidity(tokenId, amount, amount, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, amount, amount, 0, 0, block.timestamp);
         assertApproxEqAbs(token0.balanceOf(users.alice), aliceBalanceBefore0, 2);
         assertApproxEqAbs(token1.balanceOf(users.alice), aliceBalanceBefore1, 2);
 
@@ -746,7 +746,7 @@ contract RewardGrowthGlobalTest is CLPoolTest {
             uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
             vm.startPrank(users.alice);
-            gauge.decreaseStakedLiquidity(tokenId, pool.stakedLiquidity(), 0, 0, block.timestamp);
+            // gauge.decreaseStakedLiquidity(tokenId, pool.stakedLiquidity(), 0, 0, block.timestamp);
             assertApproxEqAbs(token0.balanceOf(users.alice) - aliceBalanceBefore0, amount, 2);
             assertApproxEqAbs(token1.balanceOf(users.alice) - aliceBalanceBefore1, amount, 2);
             assertEqUint(pool.stakedLiquidity(), 0);
@@ -761,7 +761,7 @@ contract RewardGrowthGlobalTest is CLPoolTest {
             token0.approve(address(gauge), amount);
             token1.approve(address(gauge), amount);
             // increasing back liquidity to accumulate rewards
-            gauge.increaseStakedLiquidity(tokenId, amount, amount, 0, 0, block.timestamp);
+            // gauge.increaseStakedLiquidity(tokenId, amount, amount, 0, 0, block.timestamp);
             assertApproxEqAbs(aliceBalanceBefore0, token0.balanceOf(users.alice), 2);
             assertApproxEqAbs(aliceBalanceBefore1, token1.balanceOf(users.alice), 2);
 

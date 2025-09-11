@@ -35,6 +35,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
     NonfungiblePositionManager public nft;
     CLGaugeFactory public gaugeFactory;
     CLGauge public gaugeImplementation;
+    address public WETH9 = address(0);
 
     /// @dev mocks
     IFactoryRegistry public factoryRegistry;

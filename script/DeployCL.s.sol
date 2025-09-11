@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.7.6;
 
 import "forge-std/StdJson.sol";
@@ -78,7 +78,6 @@ contract DeployCL is Script {
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
-        
 
         // deploy nft contracts
         nftDescriptor =

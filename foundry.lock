@@ -1,0 +1,17 @@
+{
+  "lib/ExcessivelySafeCall": {
+    "rev": "81cd99ce3e69117d665d7601c330ea03b97acce0"
+  },
+  "lib/base64": {
+    "rev": "dcbf852ba545b3d15de0ac0ef88dce934c090c8e"
+  },
+  "lib/forge-std": {
+    "rev": "1d9650e951204a0ddce9ff89c32f1997984cef4d"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "04695aecbd4d17dddfd55de766d10e3805d6f42f"
+  },
+  "lib/solidity-lib": {
+    "rev": "c01640b0f0f1d8a85cba8de378cc48469fcfd9a6"
+  }
+}

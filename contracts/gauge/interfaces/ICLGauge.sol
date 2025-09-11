@@ -4,6 +4,7 @@ pragma solidity =0.7.6;
 import {INonfungiblePositionManager} from "contracts/periphery/interfaces/INonfungiblePositionManager.sol";
 import {IVoter} from "contracts/core/interfaces/IVoter.sol";
 import {ICLPool} from "contracts/core/interfaces/ICLPool.sol";
+import {ICLGaugeFactory} from "contracts/gauge/interfaces/ICLGaugeFactory.sol";
 
 interface ICLGauge {
     event NotifyReward(address indexed from, uint256 amount);
@@ -20,6 +21,9 @@ interface ICLGauge {
 
     /// @notice Address of the CL pool linked to the gauge
     function pool() external view returns (ICLPool);
+
+    /// @notice Address of the factory that created this gauge
+    function gaugeFactory() external view returns (ICLGaugeFactory);
 
     /// @notice Address of the FeesVotingReward contract linked to the gauge
     function feesVotingReward() external view returns (address);
@@ -45,6 +49,9 @@ interface ICLGauge {
     /// @notice Cached amount of fees generated from the Pool linked to the Gauge of token1
     function fees1() external view returns (uint256);
 
+    /// @notice Cached address of WETH9
+    function WETH9() external view returns (address);
+
     /// @notice Cached address of token0, corresponding to token0 of the pool
     function token0() external view returns (address);
 
@@ -62,6 +69,9 @@ interface ICLGauge {
 
     /// @notice To provide compatibility support with the old voter
     function isPool() external view returns (bool);
+
+    /// @notice Checks whether the gauge supports payments in Native tokens
+    function supportsPayable() external view returns (bool);
 
     /// @notice Returns the rewardGrowthInside of the position at the last user action (deposit, withdraw, getReward)
     /// @param tokenId The tokenId of the position
@@ -129,40 +139,16 @@ interface ICLGauge {
     /// @param tokenId The tokenId of the position
     function withdraw(uint256 tokenId) external;
 
-    /// @notice Used to increase liquidity of a staked position
-    /// @param tokenId The tokenId of the position
-    /// @param amount0Desired The desired amount of token0 to be staked,
-    /// @param amount1Desired The desired amount of token1 to be staked,
-    /// @param amount0Min The minimum amount of token0 to spend, which serves as a slippage check,
-    /// @param amount1Min The minimum amount of token1 to spend, which serves as a slippage check,
-    /// @param deadline The time by which the transaction must be included to effect the change
-    /// @return liquidity The new liquidity amount as a result of the increase
-    /// @return amount0 The amount of token0 required to obtain new liquidity amount
-    /// @return amount1 The amount of token1 required to obtain new liquidity amount
-    function increaseStakedLiquidity(
-        uint256 tokenId,
-        uint256 amount0Desired,
-        uint256 amount1Desired,
-        uint256 amount0Min,
-        uint256 amount1Min,
-        uint256 deadline
-    ) external returns (uint128 liquidity, uint256 amount0, uint256 amount1);
+    /// @notice Fetch all tokenIds staked by a given account
+    /// @param depositor The address of the user
+    /// @return The tokenIds of the staked positions
+    function stakedValues(address depositor) external view returns (uint256[] memory);
 
-    /// @notice Used to decrease liquidity of a staked position
-    /// @param tokenId The tokenId of the position
-    /// @param liquidity The amount of liquidity to be unstaked from the gauge
-    /// @param amount0Min The minimum amount of token0 that should be accounted for the burned liquidity,
-    /// @param amount1Min The minimum amount of token1 that should be accounted for the burned liquidity,
-    /// @param deadline The time by which the transaction must be included to effect the change
-    /// @return amount0 The amount of token0 decreased from position
-    /// @return amount1 The amount of token1 decreased from position
-    function decreaseStakedLiquidity(
-        uint256 tokenId,
-        uint128 liquidity,
-        uint256 amount0Min,
-        uint256 amount1Min,
-        uint256 deadline
-    ) external returns (uint256 amount0, uint256 amount1);
+    /// @notice Fetch a staked tokenId by index
+    /// @param depositor The address of the user
+    /// @param index The index of the staked tokenId
+    /// @return The tokenId of the staked position
+    function stakedByIndex(address depositor, uint256 index) external view returns (uint256);
 
     /// @notice Check whether a position is staked in the gauge by a certain user
     /// @param depositor The address of the user

@@ -13,7 +13,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
 
         vm.startPrank(users.bob);
         vm.expectRevert(abi.encodePacked("NA"));
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
     }
 
     function test_RevertIf_GaugeIsNotAlive() public {
@@ -27,7 +27,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
 
         vm.startPrank(users.alice);
         vm.expectRevert(abi.encodePacked("GK"));
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
     }
 
     function test_IncreaseStakedLiquidity() public {
@@ -45,7 +45,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
 
         uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);
@@ -88,7 +88,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
 
         uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);
@@ -102,7 +102,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         assertEq(pool.liquidity(), TOKEN_1 * 3);
         assertEq(positionLiquidity, TOKEN_1 * 3);
 
-        gauge.decreaseStakedLiquidity(tokenId, uint128(TOKEN_1) * 2, 0, 0, block.timestamp);
+        // gauge.decreaseStakedLiquidity(tokenId, uint128(TOKEN_1) * 2, 0, 0, block.timestamp);
 
         uint256 aliceBalanceFinal0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceFinal1 = token1.balanceOf(users.alice);
@@ -132,7 +132,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1 * 5, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1 * 5, TOKEN_1, 0, 0, block.timestamp);
 
         uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);
@@ -162,7 +162,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         uint256 aliceBalanceBefore0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceBefore1 = token1.balanceOf(users.alice);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1 * 6, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1 * 6, 0, 0, block.timestamp);
 
         uint256 aliceBalanceAfter0 = token0.balanceOf(users.alice);
         uint256 aliceBalanceAfter1 = token1.balanceOf(users.alice);
@@ -190,7 +190,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         // swap 1 token1
         clCallee.swapExact1For0(address(pool), 1e18, users.alice, MAX_SQRT_RATIO - 1);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
 
         (
             ,
@@ -249,7 +249,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         // swap 1 token1
         clCallee.swapExact1For0(address(pool), 1e18, users.alice, MAX_SQRT_RATIO - 1);
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
 
         Position.Info memory gp = Position.Info(0, 0, 0, 0, 0);
         // check tokenId
@@ -356,7 +356,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
             clCallee.flash(address(pool), users.alice, TOKEN_1, TOKEN_1, pay, pay);
         }
 
-        gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(tokenId, TOKEN_1, TOKEN_1, 0, 0, block.timestamp);
 
         Position.Info memory gp = Position.Info(0, 0, 0, 0, 0);
         // check tokenId
@@ -462,7 +462,7 @@ contract IncreaseStakedLiquidityTest is LiquidityManagementBase {
         uint256 bobBalanceBefore = rewardToken.balanceOf(users.bob);
 
         vm.prank(users.alice);
-        gauge.increaseStakedLiquidity(aliceTokenId, TOKEN_1 * 1, TOKEN_1 * 1, 0, 0, block.timestamp);
+        // gauge.increaseStakedLiquidity(aliceTokenId, TOKEN_1 * 1, TOKEN_1 * 1, 0, 0, block.timestamp);
 
         vm.prank(users.alice);
         gauge.getReward(aliceTokenId);

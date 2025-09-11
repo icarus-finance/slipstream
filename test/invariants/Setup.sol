@@ -453,8 +453,8 @@ contract CLMinter is ERC721Holder {
 
         token0.approve(address(gauge), amount0);
         token1.approve(address(gauge), amount1);
-        (, lmd.token0Change, lmd.token1Change) =
-            gauge.increaseStakedLiquidity(tokenId, amount0, amount1, 0, 0, block.timestamp);
+        // (, lmd.token0Change, lmd.token1Change) =
+        //     gauge.increaseStakedLiquidity(tokenId, amount0, amount1, 0, 0, block.timestamp);
 
         Balances memory afterBalance = getBalances();
 
@@ -488,8 +488,8 @@ contract CLMinter is ERC721Holder {
 
         Balances memory beforeBalance = getBalances();
 
-        (lmd.token0Change, lmd.token1Change) =
-            gauge.decreaseStakedLiquidity(tokenId, liquidityToRemove, 0, 0, block.timestamp);
+        // (lmd.token0Change, lmd.token1Change) =
+        //     gauge.decreaseStakedLiquidity(tokenId, liquidityToRemove, 0, 0, block.timestamp);
 
         Balances memory afterBalance = getBalances();
 

@@ -17,6 +17,7 @@ import {FullMath} from "contracts/core/libraries/FullMath.sol";
 import {FixedPoint128} from "contracts/core/libraries/FixedPoint128.sol";
 import {ProtocolTimeLibrary} from "contracts/libraries/ProtocolTimeLibrary.sol";
 import {IReward} from "contracts/gauge/interfaces/IReward.sol";
+import {ICLGaugeFactory} from "contracts/gauge/interfaces/ICLGaugeFactory.sol";
 
 contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -29,7 +30,11 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     IVoter public override voter;
     /// @inheritdoc ICLGauge
     ICLPool public override pool;
+    /// @inheritdoc ICLGauge
+    ICLGaugeFactory public override gaugeFactory;
 
+    /// @inheritdoc ICLGauge
+    address public override WETH9;
     /// @inheritdoc ICLGauge
     address public override feesVotingReward;
     /// @inheritdoc ICLGauge
@@ -83,6 +88,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
         rewardToken = _rewardToken;
         voter = IVoter(_voter);
         nft = INonfungiblePositionManager(_nft);
+        WETH9 = nft.WETH9();
         token0 = _token0;
         token1 = _token1;
         tickSpacing = _tickSpacing;
@@ -227,84 +233,18 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     }
 
     /// @inheritdoc ICLGauge
-    function increaseStakedLiquidity(
-        uint256 tokenId,
-        uint256 amount0Desired,
-        uint256 amount1Desired,
-        uint256 amount0Min,
-        uint256 amount1Min,
-        uint256 deadline
-    ) external override nonReentrant returns (uint128 liquidity, uint256 amount0, uint256 amount1) {
-        require(_stakes[msg.sender].contains(tokenId), "NA");
-        require(voter.isAlive(address(this)), "GK");
-
-        // NFT manager will send these tokens to the pool
-        IERC20(token0).safeIncreaseAllowance(address(nft), amount0Desired);
-        IERC20(token1).safeIncreaseAllowance(address(nft), amount1Desired);
-
-        IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0Desired);
-        IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1Desired);
-
-        (,,,,, int24 tickLower, int24 tickUpper,,,,,) = nft.positions(tokenId);
-        _updateRewards(tokenId, tickLower, tickUpper);
-
-        (liquidity, amount0, amount1) = nft.increaseLiquidity(
-            INonfungiblePositionManager.IncreaseLiquidityParams({
-                tokenId: tokenId,
-                amount0Desired: amount0Desired,
-                amount1Desired: amount1Desired,
-                amount0Min: amount0Min,
-                amount1Min: amount1Min,
-                deadline: deadline
-            })
-        );
-
-        pool.stake(liquidity.toInt128(), tickLower, tickUpper, false);
-
-        uint256 amount0Surplus = amount0Desired - amount0;
-        uint256 amount1Surplus = amount1Desired - amount1;
-
-        if (amount0Surplus > 0) {
-            IERC20(token0).safeTransfer(msg.sender, amount0Surplus);
-        }
-        if (amount1Surplus > 0) {
-            IERC20(token1).safeTransfer(msg.sender, amount1Surplus);
-        }
+    function supportsPayable() external view override returns (bool) {
+        return token0 == WETH9 || token1 == WETH9;
     }
 
     /// @inheritdoc ICLGauge
-    function decreaseStakedLiquidity(
-        uint256 tokenId,
-        uint128 liquidity,
-        uint256 amount0Min,
-        uint256 amount1Min,
-        uint256 deadline
-    ) external override nonReentrant returns (uint256 amount0, uint256 amount1) {
-        require(_stakes[msg.sender].contains(tokenId), "NA");
+    function stakedValues(address depositor) external view override returns (uint256[] memory) {
+        return _stakes[depositor].values();
+    }
 
-        (,,,,, int24 tickLower, int24 tickUpper,,,,,) = nft.positions(tokenId);
-        _updateRewards(tokenId, tickLower, tickUpper);
-
-        (amount0, amount1) = nft.decreaseLiquidity(
-            INonfungiblePositionManager.DecreaseLiquidityParams({
-                tokenId: tokenId,
-                liquidity: liquidity,
-                amount0Min: amount0Min,
-                amount1Min: amount1Min,
-                deadline: deadline
-            })
-        );
-
-        pool.stake(-liquidity.toInt128(), tickLower, tickUpper, false);
-
-        nft.collect(
-            INonfungiblePositionManager.CollectParams({
-                tokenId: tokenId,
-                recipient: msg.sender,
-                amount0Max: uint128(amount0),
-                amount1Max: uint128(amount1)
-            })
-        );
+    /// @inheritdoc ICLGauge
+    function stakedByIndex(address depositor, uint256 index) external view override returns (uint256) {
+        return _stakes[depositor].at(index);
     }
 
     /// @inheritdoc ICLGauge
