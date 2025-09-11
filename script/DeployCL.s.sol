@@ -28,7 +28,7 @@ contract DeployCL is Script {
     address public team;
     address public weth;
     address public voter;
-    address public factoryRegistry;
+    // address public factoryRegistry;
     address public poolFactoryOwner;
     address public feeManager;
     address public factoryV2;
@@ -54,7 +54,7 @@ contract DeployCL is Script {
         team = abi.decode(vm.parseJson(jsonConstants, ".team"), (address));
         weth = abi.decode(vm.parseJson(jsonConstants, ".WETH"), (address));
         voter = abi.decode(vm.parseJson(jsonConstants, ".Voter"), (address));
-        factoryRegistry = abi.decode(vm.parseJson(jsonConstants, ".FactoryRegistry"), (address));
+        // factoryRegistry = abi.decode(vm.parseJson(jsonConstants, ".FactoryRegistry"), (address));
         poolFactoryOwner = abi.decode(vm.parseJson(jsonConstants, ".poolFactoryOwner"), (address));
         feeManager = abi.decode(vm.parseJson(jsonConstants, ".feeManager"), (address));
         factoryV2 = abi.decode(vm.parseJson(jsonConstants, ".factoryV2"), (address));
@@ -69,12 +69,6 @@ contract DeployCL is Script {
         // deploy gauges
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: voter, _implementation: address(gaugeImplementation)});
-
-        // set parameters on pool factory
-        // poolFactory.setGaugeFactory({
-        //     _gaugeFactory: address(gaugeFactory),
-        //     _gaugeImplementation: address(gaugeImplementation)
-        // });
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
@@ -92,7 +86,6 @@ contract DeployCL is Script {
 
         // set nft manager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        // poolFactory.setNonfungiblePositionManager(address(nft));
 
         // deploy fee modules
         swapFeeModule = new CustomSwapFeeModule({_factory: address(poolFactory)});
@@ -100,7 +93,7 @@ contract DeployCL is Script {
         poolFactory.setSwapFeeModule({_swapFeeModule: address(swapFeeModule)});
         poolFactory.setUnstakedFeeModule({_unstakedFeeModule: address(unstakedFeeModule)});
 
-        // transfer permissionsx
+        // transfer permissions
         nft.setOwner(team);
         poolFactory.setOwner(poolFactoryOwner);
         poolFactory.setSwapFeeManager(feeManager);

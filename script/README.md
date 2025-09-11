@@ -18,5 +18,5 @@ forge test
 Command:
 
 ```
-forge script script/DeployCL.s.sol:DeployCL --broadcast --slow --rpc-url optimism --verify -vvvv 
+forge script script/DeployCL.s.sol:DeployCL --broadcast --slow --rpc-url "rise_testnet" --verify --verifier "blockscout" -vvvv --verifier-url "https://explorer.testnet.riselabs.xyz/api"
 ```
