@@ -15,6 +15,7 @@ import {CustomSwapFeeModule} from "contracts/core/fees/CustomSwapFeeModule.sol";
 import {CustomUnstakedFeeModule} from "contracts/core/fees/CustomUnstakedFeeModule.sol";
 import {MixedRouteQuoterV1} from "contracts/periphery/lens/MixedRouteQuoterV1.sol";
 import {QuoterV2} from "contracts/periphery/lens/QuoterV2.sol";
+import {SwapRouter} from "contracts/periphery/SwapRouter.sol";
 
 contract DeployTestPool is Script {
     using stdJson for string;
@@ -85,15 +86,21 @@ contract DeployTestPool is Script {
     }
 
     function run() public {
-        address IRS = 0xD4719D14C9aD0661e8D7a347d68dE74ECE4426e9;
-        address WETH = 0x4200000000000000000000000000000000000006;
-        CLFactory poolFactory = CLFactory(0x5591e3f890725F0f3dbF47B63c81bbb91975483c);
+        // address IRS = 0xD4719D14C9aD0661e8D7a347d68dE74ECE4426e9;
+        // address WETH = 0x4200000000000000000000000000000000000006;
+        // CLFactory poolFactory = CLFactory(0x5591e3f890725F0f3dbF47B63c81bbb91975483c);
 
         vm.startBroadcast(deployerAddress);
 
-        CLPool pool = CLPool(
-            poolFactory.createPool({tokenA: IRS, tokenB: WETH, tickSpacing: 50, sqrtPriceX96: encodePriceSqrt(1, 1)})
+        // CLPool pool = CLPool(
+        //     poolFactory.createPool({tokenA: IRS, tokenB: WETH, tickSpacing: 50, sqrtPriceX96: encodePriceSqrt(1, 1)})
+        // );
+
+        SwapRouter swapRouter = new SwapRouter(
+            0x5591e3f890725F0f3dbF47B63c81bbb91975483c,
+            0x4200000000000000000000000000000000000006
         );
+
         vm.stopBroadcast();
     }
 
