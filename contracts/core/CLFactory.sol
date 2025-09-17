@@ -163,7 +163,11 @@ contract CLFactory is ICLFactory {
             (bool success, bytes memory data) = swapFeeModule.excessivelySafeStaticCall(
                 500_000,
                 32,
+<<<<<<< HEAD
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+=======
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool) // TODO: check why the change
+>>>>>>> 1f0614c (Apply superchain-slipstream changes)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
@@ -185,7 +189,11 @@ contract CLFactory is ICLFactory {
             (bool success, bytes memory data) = unstakedFeeModule.excessivelySafeStaticCall(
                 500_000,
                 32,
+<<<<<<< HEAD
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+=======
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool) // TODO: check why the change
+>>>>>>> 1f0614c (Apply superchain-slipstream changes)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
