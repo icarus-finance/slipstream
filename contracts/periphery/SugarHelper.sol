@@ -65,7 +65,7 @@ contract SugarHelper is ISugarHelper {
 
         if (sqrtRatioAX96 > sqrtRatioBX96) (sqrtRatioAX96, sqrtRatioBX96) = (sqrtRatioBX96, sqrtRatioAX96);
 
-        if (sqrtRatioX96 <= sqrtRatioAX96 && sqrtRatioX96 >= sqrtRatioBX96) {
+        if (sqrtRatioX96 <= sqrtRatioAX96 || sqrtRatioX96 >= sqrtRatioBX96) {
             return 0;
         }
 
@@ -96,7 +96,7 @@ contract SugarHelper is ISugarHelper {
 
         if (sqrtRatioAX96 > sqrtRatioBX96) (sqrtRatioAX96, sqrtRatioBX96) = (sqrtRatioBX96, sqrtRatioAX96);
 
-        if (sqrtRatioX96 <= sqrtRatioAX96 && sqrtRatioX96 >= sqrtRatioBX96) {
+        if (sqrtRatioX96 <= sqrtRatioAX96 || sqrtRatioX96 >= sqrtRatioBX96) {
             return 0;
         }
 

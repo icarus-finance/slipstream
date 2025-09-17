@@ -107,6 +107,14 @@ interface ICLFactory {
     /// @dev tokenA and tokenB may be passed in either token0/token1 or token1/token0 order
     /// @param tokenA The contract address of either token0 or token1
     /// @param tokenB The contract address of the other token
+    /// @param tickSpacing The tick spacing of the pool in uint24
+    /// @return pool The pool address
+    function getPool(address tokenA, address tokenB, uint24 tickSpacing) external view returns (address pool);
+
+    /// @notice Returns the pool address for a given pair of tokens and a tick spacing, or address 0 if it does not exist
+    /// @dev tokenA and tokenB may be passed in either token0/token1 or token1/token0 order
+    /// @param tokenA The contract address of either token0 or token1
+    /// @param tokenB The contract address of the other token
     /// @param tickSpacing The tick spacing of the pool
     /// @return pool The pool address
     function getPool(address tokenA, address tokenB, int24 tickSpacing) external view returns (address pool);
@@ -119,6 +127,11 @@ interface ICLFactory {
     /// @notice Returns the number of pools created from this factory
     /// @return Number of pools created from this factory
     function allPoolsLength() external view returns (uint256);
+
+    /// @notice Used in VotingEscrow to determine if a contract is a valid pool of the factory
+    /// @param pool The address of the pool to check
+    /// @return Whether the pool is a valid pool of the factory
+    function isPair(address pool) external view returns (bool);
 
     /// @notice Used in VotingEscrow to determine if a contract is a valid pool of the factory
     /// @param pool The address of the pool to check
@@ -137,7 +150,17 @@ interface ICLFactory {
     /// @return The unstaked fee for the given pool
     function getUnstakedFee(address pool) external view returns (uint24);
 
-    /// @notice Creates a pool for the given two tokens and fee
+    /// @notice Creates a pool for the given two tokens and tick spacing
+    /// @param tokenA One of the two tokens in the desired pool
+    /// @param tokenB The other of the two tokens in the desired pool
+    /// @param tickSpacing The desired tick spacing for the pool
+    /// @dev Use encodeSqrtPrice(1,1) as price
+    /// @dev Used to programmatically create pools in case one does not exist
+    /// @dev Invalid tickSpacing will revert the transaction
+    /// @return pool The address of the newly created pool
+    function createPool(address tokenA, address tokenB, uint24 tickSpacing) external returns (address pool);
+
+    /// @notice Creates a pool for the given two tokens and tick spacing
     /// @param tokenA One of the two tokens in the desired pool
     /// @param tokenB The other of the two tokens in the desired pool
     /// @param tickSpacing The desired tick spacing for the pool
