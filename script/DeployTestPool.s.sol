@@ -96,10 +96,8 @@ contract DeployTestPool is Script {
         //     poolFactory.createPool({tokenA: IRS, tokenB: WETH, tickSpacing: 50, sqrtPriceX96: encodePriceSqrt(1, 1)})
         // );
 
-        SwapRouter swapRouter = new SwapRouter(
-            0x5591e3f890725F0f3dbF47B63c81bbb91975483c,
-            0x4200000000000000000000000000000000000006
-        );
+        SwapRouter swapRouter =
+            new SwapRouter(0x5591e3f890725F0f3dbF47B63c81bbb91975483c, 0x4200000000000000000000000000000000000006);
 
         vm.stopBroadcast();
     }

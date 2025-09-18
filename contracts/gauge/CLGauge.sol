@@ -239,7 +239,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
 
     /// @inheritdoc ICLGauge
     function stakedValues(address depositor) external view override returns (uint256[] memory) {
-        return _stakes[depositor].values();
+        return _stakes[depositor].values(); // TODO check for overflow
     }
 
     /// @inheritdoc ICLGauge
@@ -266,7 +266,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     /// @inheritdoc ICLGauge
     function notifyRewardAmount(uint256 _amount) external override nonReentrant {
         address sender = msg.sender;
-        require(sender == address(voter), "NV");
+        require(sender == address(voter), "NV"); // TODO: Check V2 implementation
         require(_amount != 0, "ZR");
         _claimFees();
         _notifyRewardAmount(sender, _amount);
@@ -275,7 +275,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     /// @inheritdoc ICLGauge
     function notifyRewardWithoutClaim(uint256 _amount) external override nonReentrant {
         address sender = msg.sender;
-        require(sender == IVotingEscrow(voter.ve()).team(), "NT");
+        require(sender == IVotingEscrow(voter.ve()).team(), "NT"); // TODO: add dynamic caller
         require(_amount != 0, "ZR");
         _notifyRewardAmount(sender, _amount);
     }

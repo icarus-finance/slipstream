@@ -8,6 +8,11 @@ import {IFactoryRegistry} from "contracts/core/interfaces/IFactoryRegistry.sol";
 interface IVoter {
     function ve() external view returns (IVotingEscrow);
 
+    /// @notice Address of Minter.sol
+    function minter() external view returns (address);
+
+    function governor() external view returns (address);
+
     function vote(uint256 _tokenId, address[] calldata _poolVote, uint256[] calldata _weights) external;
 
     function gauges(address _pool) external view returns (address);

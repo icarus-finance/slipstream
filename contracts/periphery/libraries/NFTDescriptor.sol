@@ -86,7 +86,7 @@ library NFTDescriptor {
     ) private pure returns (string memory) {
         return string(
             abi.encodePacked(
-                "This NFT represents a liquidity position in an Aerodrome Finance ",
+                "This NFT represents a liquidity position in an Icarus Finance ",
                 quoteTokenSymbol,
                 "-",
                 baseTokenSymbol,
