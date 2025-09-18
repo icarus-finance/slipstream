@@ -164,10 +164,14 @@ contract CLFactory is ICLFactory {
                 500_000,
                 32,
 <<<<<<< HEAD
+<<<<<<< HEAD
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
 =======
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool) // TODO: check why the change
 >>>>>>> 1f0614c (Apply superchain-slipstream changes)
+=======
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+>>>>>>> 05eafa3 (Fix unit tests)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
@@ -190,10 +194,14 @@ contract CLFactory is ICLFactory {
                 500_000,
                 32,
 <<<<<<< HEAD
+<<<<<<< HEAD
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
 =======
                 abi.encodeWithSelector(IFeeModule.getFee.selector, pool) // TODO: check why the change
 >>>>>>> 1f0614c (Apply superchain-slipstream changes)
+=======
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+>>>>>>> 05eafa3 (Fix unit tests)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
