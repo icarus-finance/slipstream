@@ -26,7 +26,7 @@ contract LowFeeLargeLiquidityAroundCurrentPriceStableSwapAllStakedTest is CLPool
 
         stakedPositions.push(Position({tickLower: -tickSpacing, tickUpper: tickSpacing, liquidity: liquidity}));
 
-        gauge = CLGauge(voter.gauges(pool));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), pool));
 
         vm.stopPrank();
 

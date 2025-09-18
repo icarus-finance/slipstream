@@ -14,6 +14,7 @@ contract SetNFTManagerTest is CLGaugeFactoryTest {
         string memory symbol = "IRS_CL_POOL";
 
         nft = new NonfungiblePositionManager({
+            _owner: users.owner,
             _factory: address(poolFactory),
             _WETH9: address(weth),
             _tokenDescriptor: address(nftDescriptor),

@@ -29,7 +29,7 @@ contract CalculateFeesTest is CLPoolTest {
         vm.prank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
 
-        gauge = CLGauge(voter.gauges(address(pool)));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
 
         vm.startPrank(users.alice);
 

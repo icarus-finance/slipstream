@@ -133,6 +133,7 @@ contract SetupCL {
 
         // deploy nft manager
         nft = new NonfungiblePositionManager({
+            _owner: msg.sender,
             _factory: address(poolFactory),
             _WETH9: address(weth),
             _tokenDescriptor: address(100),
@@ -169,7 +170,7 @@ contract SetupCL {
             })
         );
 
-        gauge = CLGauge(voter.gauges(address(pool)));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
 
         hevm.prank(address(voter));
         rewardToken.approve(address(gauge), 1000000000e18);
@@ -282,7 +283,7 @@ contract CLMinter is ERC721Holder {
             amount0Min: 0,
             amount1Min: 0,
             deadline: block.timestamp,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
 
         (tokenId,,,) = nft.mint(params);
@@ -312,7 +313,7 @@ contract CLMinter is ERC721Holder {
             amount0Min: 0,
             amount1Min: 0,
             deadline: block.timestamp,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
 
         (tokenId,,,) = nft.mint(params);

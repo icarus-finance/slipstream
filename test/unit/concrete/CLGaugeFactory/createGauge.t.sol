@@ -34,6 +34,7 @@ contract CreateGaugeTest is CLGaugeFactoryTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
+        CLGauge(voter.createGauge(address(poolFactory), pool));
         vm.expectRevert(abi.encodePacked("ERC1167: create2 failed"));
         CLGauge(gaugeFactory.createGauge(forwarder, pool, address(feesVotingReward), address(rewardToken), true));
     }
@@ -45,7 +46,7 @@ contract CreateGaugeTest is CLGaugeFactoryTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), pool));
         feesVotingReward = voter.gaugeToFees(address(gauge));
 
         assertEq(address(gauge.pool()), pool);

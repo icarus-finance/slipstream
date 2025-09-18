@@ -12,6 +12,7 @@ contract CLFactoryTest is BaseFixture {
         assertEq(poolFactory.unstakedFeeModule(), address(customUnstakedFeeModule));
         assertEq(poolFactory.swapFeeManager(), users.feeManager);
         assertEq(poolFactory.unstakedFeeManager(), users.feeManager);
+        assertNotEq(poolFactory.unstakedFeeManager(), users.charlie);
         // assertEq(poolFactory.nft(), address(nft));
         // assertEq(poolFactory.gaugeFactory(), address(gaugeFactory));
         // assertEq(poolFactory.gaugeImplementation(), address(gaugeImplementation));

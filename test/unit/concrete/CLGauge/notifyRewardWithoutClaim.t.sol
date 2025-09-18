@@ -21,7 +21,7 @@ contract NotifyRewardWithoutClaimTest is CLGaugeTest {
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
         );
-        gauge = CLGauge(voter.gauges(address(pool)));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         feesVotingReward = voter.gaugeToFees(address(gauge));
 
         skipToNextEpoch(0);

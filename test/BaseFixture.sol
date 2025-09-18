@@ -97,6 +97,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
             _nativeCurrencyLabelBytes: 0x4554480000000000000000000000000000000000000000000000000000000000 // 'ETH' as bytes32 string
         });
         nft = new NonfungiblePositionManager({
+            _owner: users.owner,
             _factory: address(poolFactory),
             _WETH9: address(weth),
             _tokenDescriptor: address(nftDescriptor),

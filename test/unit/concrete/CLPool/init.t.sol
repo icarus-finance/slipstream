@@ -12,7 +12,7 @@ contract InitTest is CLPoolTest {
             tickSpacing: TICK_SPACING_LOW,
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
-        address gauge = voter.gauges(pool);
+        address gauge = voter.createGauge(address(poolFactory), pool);
 
         vm.expectRevert();
         ICLPool(pool).initialize({
