@@ -56,6 +56,7 @@ describe('SwapRouter gas tests', function () {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
+        sqrtPriceX96: 0
       }
 
       return nft.mint(liquidityParams)
@@ -73,9 +74,9 @@ describe('SwapRouter gas tests', function () {
     await createPoolWETH9(tokens[0].address)
 
     const poolAddresses = await Promise.all([
-      factory.getPool(tokens[0].address, tokens[1].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
-      factory.getPool(tokens[1].address, tokens[2].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
-      factory.getPool(weth9.address, tokens[0].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
+      factory['getPool(address,address,uint24)'](tokens[0].address, tokens[1].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
+      factory['getPool(address,address,uint24)'](tokens[1].address, tokens[2].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
+      factory['getPool(address,address,uint24)'](weth9.address, tokens[0].address, TICK_SPACINGS[FeeAmount.MEDIUM]),
     ])
 
     const ICLPoolABI = artifacts.readArtifactSync('ICLPool').abi
@@ -238,16 +239,16 @@ describe('SwapRouter gas tests', function () {
     const slots = await Promise.all(
       pools.map((pool) =>
         Promise.all([
-          pool['gaugeFees()']().then((f) => f.token0.toString()),
-          pool['gaugeFees()']().then((f) => f.token1.toString()),
+          pool.feeGrowthGlobal0X128().then((f) => f.toString()),
+          pool.feeGrowthGlobal1X128().then((f) => f.toString()),
         ])
       )
     )
 
     expect(slots).to.deep.eq([
-      ['1', '1'],
-      ['1', '1'],
-      ['1', '1'],
+      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
+      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
+      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
     ])
   })
 

@@ -51,14 +51,6 @@ contract NonfungiblePositionManager is
         uint128 tokensOwed0;
         uint128 tokensOwed1;
     }
-    /// @dev Revert String Annotations:
-    /// NE - ERC721: approved query for nonexistent token
-    /// PS - Price slippage check
-    /// ID - Invalid token ID
-    /// ZA - Zero Address
-    /// NA - Not approved
-    /// NC - Not cleared
-    /// NO - Not Owner
 
     /// @dev IDs of pools assigned by this contract
     mapping(address => uint80) private _poolIds;
