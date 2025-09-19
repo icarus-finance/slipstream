@@ -80,13 +80,18 @@ const v3CoreFactoryFixture: Fixture<{
     mockVoter.address,
     gaugeImplementation.address
   )) as CLGaugeFactory
-  await factory.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
+  // await factory.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
 
   const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
   const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()
+  
+  const nftSVGLibraryFactory = await ethers.getContractFactory('NFTSVG')
+  const nftSVGLibrary = await nftSVGLibraryFactory.deploy()
+  
   const positionDescriptorFactory = await ethers.getContractFactory('NonfungibleTokenPositionDescriptor', {
     libraries: {
       NFTDescriptor: nftDescriptorLibrary.address,
+      NFTSVG: nftSVGLibrary.address,
     },
   })
   const nftDescriptor = (await positionDescriptorFactory.deploy(
@@ -101,7 +106,7 @@ const v3CoreFactoryFixture: Fixture<{
     nftDescriptor.address
   )) as MockTimeNonfungiblePositionManager
 
-  await factory.setNonfungiblePositionManager(nft.address)
+  // await factory.setNonfungiblePositionManager(nft.address)
   await gaugeFactory.setNonfungiblePositionManager(nft.address)
 
   // approve pool factory <=> gauge factory combination

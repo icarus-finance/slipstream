@@ -44,8 +44,6 @@ async function main() {
     gaugeImplementation.address
   )
 
-  await poolFactory.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
-
   const nftDescriptorLibrary = await deployLibrary('NFTDescriptor')
   const nftDescriptor = await deploy<NonfungibleTokenPositionDescriptor>(
     'NonfungibleTokenPositionDescriptor',

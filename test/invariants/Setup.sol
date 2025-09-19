@@ -123,11 +123,6 @@ contract SetupCL {
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
-        // poolFactory.setGaugeFactory({
-        //     _gaugeFactory: address(gaugeFactory),
-        //     _gaugeImplementation: address(gaugeImplementation)
-        // });
-
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
 

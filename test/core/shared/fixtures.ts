@@ -91,8 +91,8 @@ export const poolFixture: Fixture<PoolFixture> = async function (): Promise<Pool
     mockTimePoolDeployer.address
   )) as CustomUnstakedFeeModule
   await mockTimePoolDeployer.setUnstakedFeeModule(customUnstakedFeeModule.address)
-  await mockTimePoolDeployer.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
-  await mockTimePoolDeployer.setNonfungiblePositionManager('0x0000000000000000000000000000000000000001')
+  // await mockTimePoolDeployer.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
+  // await mockTimePoolDeployer.setNonfungiblePositionManager('0x0000000000000000000000000000000000000001')
   // approve pool factory <=> gauge factory combination
   const mockVotingRewardsFactory = (await MockVotingRewardsFactoryFactory.deploy()) as MockVotingRewardsFactory
   await mockFactoryRegistry.approve(
@@ -123,7 +123,7 @@ export const poolFixture: Fixture<PoolFixture> = async function (): Promise<Pool
       // add tick spacing if not already added, backwards compatible with CL tests
       const tickSpacingFee = await mockTimePoolDeployer.tickSpacingToFee(tickSpacing)
       if (tickSpacingFee == 0) await mockTimePoolDeployer['enableTickSpacing(int24,uint24)'](tickSpacing, fee)
-      const tx = await mockTimePoolDeployer.createPool(
+      const tx = await mockTimePoolDeployer['createPool(address,address,int24,uint160)'](
         firstToken.address,
         secondToken.address,
         tickSpacing,
