@@ -18,11 +18,11 @@ contract MockVotingEscrow is IVotingEscrow {
         return _team;
     }
 
-    function getApproved(uint256 tokenId) external override view returns (address operator) {
+    function getApproved(uint256 tokenId) external view override returns (address operator) {
         return address(0);
     }
 
-    function isApprovedForAll(address owner, address operator) external override view returns (bool) {
+    function isApprovedForAll(address owner, address operator) external view override returns (bool) {
         return false;
     }
 
@@ -32,11 +32,11 @@ contract MockVotingEscrow is IVotingEscrow {
 
     function isApprovedOrOwner(address _spender, uint256 _tokenId) external override returns (bool) {}
 
-    function ownerOf(uint256 tokenId) external override view returns (address owner) {
+    function ownerOf(uint256 tokenId) external view override returns (address owner) {
         return address(0);
     }
 
-    function supportsInterface(bytes4 interfaceId) external override view returns (bool) {
+    function supportsInterface(bytes4 interfaceId) external view override returns (bool) {
         return false;
     }
 
@@ -44,7 +44,7 @@ contract MockVotingEscrow is IVotingEscrow {
 
     function safeTransferFrom(address from, address to, uint256 tokenId) external override {}
 
-    function balanceOf(address owner) external override view returns (uint256 balance) {
+    function balanceOf(address owner) external view override returns (uint256 balance) {
         return 0;
     }
 

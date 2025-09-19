@@ -657,7 +657,7 @@ contract RewardGrowthGlobalTest is CLPoolTest {
             timeNoStakedLiq: timeNoStakedLiquidity
         });
     }
-    
+
     function test_RewardsRolledOverIfHolesAcrossAdjacentEpochs() public {
         uint256 reward = TOKEN_1;
 

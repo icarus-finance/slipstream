@@ -193,7 +193,7 @@ describe('Tick', () => {
       expect(liquidityNet).to.eq(2 - 1 - 3 + 1)
     })
     it('reverts on overflow liquidity gross', async () => {
-      await tickTest.update(0, 0, MaxUint128.div(2).sub(1), 0, 0,0, 0, 0, 0, false, MaxUint128)
+      await tickTest.update(0, 0, MaxUint128.div(2).sub(1), 0, 0, 0, 0, 0, 0, false, MaxUint128)
       await expect(tickTest.update(0, 0, MaxUint128.div(2).sub(1), 0, 0, 0, 0, 0, 0, false, MaxUint128)).to.be.reverted
     })
     it('assumes all growth happens below ticks lte current tick', async () => {

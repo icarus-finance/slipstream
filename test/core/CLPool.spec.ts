@@ -141,7 +141,14 @@ describe('CLPool', () => {
     })
     it('fails if starting price is too low', async () => {
       await expect(
-        pool.initialize(factory.address, token0.address, token1.address, TICK_SPACINGS[FeeAmount.MEDIUM], ethers.constants.AddressZero, 1)
+        pool.initialize(
+          factory.address,
+          token0.address,
+          token1.address,
+          TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
+          1
+        )
       ).to.be.revertedWith('R')
       await expect(
         pool.initialize(

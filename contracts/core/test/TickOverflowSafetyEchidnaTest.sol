@@ -44,7 +44,7 @@ contract TickOverflowSafetyEchidnaTest {
             liquidityDelta,
             feeGrowthGlobal0X128,
             feeGrowthGlobal1X128,
-            0,  // TODO rewardGrowthGlobalX128
+            0, // TODO rewardGrowthGlobalX128
             0,
             0,
             uint32(block.timestamp),
@@ -57,7 +57,7 @@ contract TickOverflowSafetyEchidnaTest {
             liquidityDelta,
             feeGrowthGlobal0X128,
             feeGrowthGlobal1X128,
-            0,  // TODO rewardGrowthGlobalX128
+            0, // TODO rewardGrowthGlobalX128
             0,
             0,
             uint32(block.timestamp),

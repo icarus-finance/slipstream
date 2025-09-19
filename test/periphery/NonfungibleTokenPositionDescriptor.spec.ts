@@ -134,7 +134,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-        sqrtPriceX96: 0
+        sqrtPriceX96: 0,
       })
 
       const metadata = extractJSONFromURI(await nft.tokenURI(1))
@@ -165,7 +165,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-        sqrtPriceX96: 0
+        sqrtPriceX96: 0,
       })
 
       const metadata = extractJSONFromURI(await nft.tokenURI(1))
@@ -195,15 +195,15 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-        sqrtPriceX96: 0
+        sqrtPriceX96: 0,
       })
 
       const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
       const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()
-      
+
       const nftSVGLibraryFactory = await ethers.getContractFactory('NFTSVG')
       const nftSVGLibrary = await nftSVGLibraryFactory.deploy()
-      
+
       const positionDescriptorFactory = await ethers.getContractFactory('NonfungibleTokenPositionDescriptor', {
         libraries: {
           NFTDescriptor: nftDescriptorLibrary.address,

@@ -753,42 +753,50 @@ describe('NFTDescriptor', () => {
     })
 
     it('matches the current snapshot', async () => {
-      const svg = await nftDescriptor.generateSVGImage({
-        tokenId,
-        baseTokenAddress,
-        quoteTokenAddress,
-        baseTokenSymbol,
-        quoteTokenSymbol,
-        baseTokenDecimals,
-        quoteTokenDecimals,
-        flipRatio,
-        tickLower,
-        tickUpper,
-        // tickCurrent,
-        tickSpacing,
-        poolAddress,
-      }, 0, 0)
+      const svg = await nftDescriptor.generateSVGImage(
+        {
+          tokenId,
+          baseTokenAddress,
+          quoteTokenAddress,
+          baseTokenSymbol,
+          quoteTokenSymbol,
+          baseTokenDecimals,
+          quoteTokenDecimals,
+          flipRatio,
+          tickLower,
+          tickUpper,
+          // tickCurrent,
+          tickSpacing,
+          poolAddress,
+        },
+        0,
+        0
+      )
 
       expect(svg).toMatchSnapshot()
       fs.writeFileSync('./test/periphery/__snapshots__/NFTDescriptor.svg', svg)
     })
 
     it('returns a valid SVG', async () => {
-      const svg = await nftDescriptor.generateSVGImage({
-        tokenId,
-        baseTokenAddress,
-        quoteTokenAddress,
-        baseTokenSymbol,
-        quoteTokenSymbol,
-        baseTokenDecimals,
-        quoteTokenDecimals,
-        flipRatio,
-        tickLower,
-        tickUpper,
-        // tickCurrent,
-        tickSpacing,
-        poolAddress,
-      }, 0, 0)
+      const svg = await nftDescriptor.generateSVGImage(
+        {
+          tokenId,
+          baseTokenAddress,
+          quoteTokenAddress,
+          baseTokenSymbol,
+          quoteTokenSymbol,
+          baseTokenDecimals,
+          quoteTokenDecimals,
+          flipRatio,
+          tickLower,
+          tickUpper,
+          // tickCurrent,
+          tickSpacing,
+          poolAddress,
+        },
+        0,
+        0
+      )
       expect(isSvg(svg)).to.eq(true)
     })
   })

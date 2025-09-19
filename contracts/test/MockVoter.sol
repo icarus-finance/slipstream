@@ -38,11 +38,11 @@ contract MockVoter is IVoter {
         emergencyCouncil = msg.sender;
     }
 
-    function minter() external override view returns (address) {
+    function minter() external view override returns (address) {
         return address(0);
     }
 
-    function governor() external override view returns (address) {
+    function governor() external view override returns (address) {
         return address(0);
     }
 

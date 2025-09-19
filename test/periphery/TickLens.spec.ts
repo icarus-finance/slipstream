@@ -92,7 +92,7 @@ describe('TickLens', () => {
         amount1Min: 0,
         recipient: wallets[0].address,
         deadline: 1,
-        sqrtPriceX96: 0
+        sqrtPriceX96: 0,
       }
 
       const { liquidity } = await nft.callStatic.mint(mintParams)
