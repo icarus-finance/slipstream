@@ -34,14 +34,13 @@ contract CLFactory is ICLFactory {
     uint24 public override defaultUnstakedFee;
     /// @inheritdoc ICLFactory
     mapping(int24 => uint24) public override tickSpacingToFee;
-    /// @inheritdoc ICLFactory
-    mapping(address => mapping(address => mapping(int24 => address))) public override getPool;
     /// @dev Used in VotingEscrow to determine if a contract is a valid pool
     mapping(address => bool) private _isPool;
     /// @inheritdoc ICLFactory
     address[] public override allPools;
 
     int24[] private _tickSpacings;
+    mapping(address => mapping(address => mapping(int24 => address))) internal _getPool;
 
     constructor(address _voter, address _poolImplementation) {
         owner = msg.sender;
@@ -56,16 +55,26 @@ contract CLFactory is ICLFactory {
         emit UnstakedFeeManagerChanged(address(0), msg.sender);
         emit DefaultUnstakedFeeChanged(0, 100_000);
 
-        enableTickSpacing(1, 100);
-        enableTickSpacing(50, 500);
-        enableTickSpacing(100, 500);
-        enableTickSpacing(200, 3_000);
-        enableTickSpacing(2_000, 10_000);
+        _enableTickSpacing(1, 100);
+        _enableTickSpacing(50, 500);
+        _enableTickSpacing(100, 500);
+        _enableTickSpacing(200, 3_000);
+        _enableTickSpacing(2_000, 10_000);
+    }
+
+    /// @inheritdoc ICLFactory
+    function createPool(address tokenA, address tokenB, uint24 tickSpacing) external override returns (address) {
+        return createPool({
+            tokenA: tokenA,
+            tokenB: tokenB,
+            tickSpacing: int24(tickSpacing),
+            sqrtPriceX96: 79228162514264337593543950336 // encodePriceSqrt(1, 1)
+        });
     }
 
     /// @inheritdoc ICLFactory
     function createPool(address tokenA, address tokenB, int24 tickSpacing, uint160 sqrtPriceX96)
-        external
+        public
         override
         returns (address pool)
     {
@@ -73,7 +82,7 @@ contract CLFactory is ICLFactory {
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0));
         require(tickSpacingToFee[tickSpacing] != 0);
-        require(getPool[token0][token1][tickSpacing] == address(0));
+        require(_getPool[token0][token1][tickSpacing] == address(0));
         pool = Clones.cloneDeterministic({
             master: poolImplementation,
             salt: keccak256(abi.encode(token0, token1, tickSpacing))
@@ -88,9 +97,9 @@ contract CLFactory is ICLFactory {
         });
         allPools.push(pool);
         _isPool[pool] = true;
-        getPool[token0][token1][tickSpacing] = pool;
+        _getPool[token0][token1][tickSpacing] = pool;
         // populate mapping in the reverse direction, deliberate choice to avoid the cost of comparing addresses
-        getPool[token1][token0][tickSpacing] = pool;
+        _getPool[token1][token0][tickSpacing] = pool;
         emit PoolCreated(token0, token1, tickSpacing, pool);
     }
 
@@ -152,7 +161,9 @@ contract CLFactory is ICLFactory {
     function getSwapFee(address pool) external view override returns (uint24) {
         if (swapFeeModule != address(0)) {
             (bool success, bytes memory data) = swapFeeModule.excessivelySafeStaticCall(
-                200_000, 32, abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+                500_000,
+                32,
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
@@ -172,7 +183,9 @@ contract CLFactory is ICLFactory {
         }
         if (unstakedFeeModule != address(0)) {
             (bool success, bytes memory data) = unstakedFeeModule.excessivelySafeStaticCall(
-                200_000, 32, abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
+                500_000,
+                32,
+                abi.encodeWithSelector(IFeeModule.getFee.selector, pool)
             );
             if (success) {
                 uint24 fee = abi.decode(data, (uint24));
@@ -187,16 +200,27 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     function enableTickSpacing(int24 tickSpacing, uint24 fee) public override {
         require(msg.sender == owner);
+        _enableTickSpacing(tickSpacing, fee);
+    }
+
+    function _enableTickSpacing(int24 tickSpacing, uint24 fee) internal {
         require(fee > 0 && fee <= 100_000);
         // tick spacing is capped at 16384 to prevent the situation where tickSpacing is so large that
         // TickBitmap#nextInitializedTickWithinOneWord overflows int24 container from a valid tick
         // 16384 ticks represents a >5x price change with ticks of 1 bips
         require(tickSpacing > 0 && tickSpacing < 16384);
         require(tickSpacingToFee[tickSpacing] == 0);
-
         tickSpacingToFee[tickSpacing] = fee;
         _tickSpacings.push(tickSpacing);
         emit TickSpacingEnabled(tickSpacing, fee);
+    }
+
+    function getPool(address tokenA, address tokenB, int24 tickSpacing) external view override returns (address) {
+        return _getPool[tokenA][tokenB][tickSpacing];
+    }
+
+    function getPool(address tokenA, address tokenB, uint24 tickSpacing) external view override returns (address) {
+        return _getPool[tokenA][tokenB][int24(tickSpacing)];
     }
 
     /// @inheritdoc ICLFactory
@@ -207,6 +231,11 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     function allPoolsLength() external view override returns (uint256) {
         return allPools.length;
+    }
+
+    /// @inheritdoc ICLFactory
+    function isPair(address pool) external view override returns (bool) {
+        return _isPool[pool];
     }
 
     /// @inheritdoc ICLFactory

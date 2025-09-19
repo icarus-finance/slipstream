@@ -72,7 +72,7 @@ contract CreatePoolTest is CLFactoryTest {
         });
         assertEqUint(poolFactory.getSwapFee(pool), 100);
 
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         address feesVotingReward = voter.gaugeToFees(address(gauge));
         assertEq(CLPool(pool).gauge(), address(gauge));
         assertEq(address(gauge.pool()), address(pool));
@@ -91,7 +91,7 @@ contract CreatePoolTest is CLFactoryTest {
         });
         assertEqUint(poolFactory.getSwapFee(pool), 500);
 
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         address feesVotingReward = voter.gaugeToFees(address(gauge));
         assertEq(CLPool(pool).gauge(), address(gauge));
         assertEq(address(gauge.pool()), address(pool));
@@ -110,7 +110,7 @@ contract CreatePoolTest is CLFactoryTest {
         });
         assertEqUint(poolFactory.getSwapFee(pool), 500);
 
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         address feesVotingReward = voter.gaugeToFees(address(gauge));
         assertEq(CLPool(pool).gauge(), address(gauge));
         assertEq(address(gauge.pool()), address(pool));
@@ -129,7 +129,7 @@ contract CreatePoolTest is CLFactoryTest {
         });
         assertEqUint(poolFactory.getSwapFee(pool), 3_000);
 
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         address feesVotingReward = voter.gaugeToFees(address(gauge));
         assertEq(CLPool(pool).gauge(), address(gauge));
         assertEq(address(gauge.pool()), address(pool));
@@ -148,7 +148,7 @@ contract CreatePoolTest is CLFactoryTest {
         });
         assertEqUint(poolFactory.getSwapFee(pool), 10_000);
 
-        CLGauge gauge = CLGauge(voter.gauges(pool));
+        CLGauge gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         address feesVotingReward = voter.gaugeToFees(address(gauge));
         assertEq(CLPool(pool).gauge(), address(gauge));
         assertEq(address(gauge.pool()), address(pool));

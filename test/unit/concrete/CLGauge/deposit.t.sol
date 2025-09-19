@@ -21,7 +21,7 @@ contract DepositTest is CLGaugeTest {
                 sqrtPriceX96: encodePriceSqrt(1, 1)
             })
         );
-        gauge = CLGauge(voter.gauges(address(pool)));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
 
         vm.startPrank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
@@ -41,7 +41,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -63,7 +63,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -105,7 +105,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -135,7 +135,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId,,,) = nft.mint(params);
 
@@ -157,7 +157,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 
@@ -203,7 +203,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 
@@ -249,7 +249,7 @@ contract DepositTest is CLGaugeTest {
             amount0Min: 0,
             amount1Min: 0,
             deadline: 10,
-            sqrtPriceX96: 0 // TODO
+            sqrtPriceX96: 0
         });
         (uint256 tokenId, uint128 liquidity,,) = nft.mint(params);
 

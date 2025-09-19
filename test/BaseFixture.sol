@@ -83,10 +83,6 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         // deploy gauges and associated contracts
         gaugeImplementation = new CLGauge();
         gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
-        // poolFactory.setGaugeFactory({
-        //     _gaugeFactory: address(gaugeFactory),
-        //     _gaugeImplementation: address(gaugeImplementation)
-        // });
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
@@ -97,6 +93,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
             _nativeCurrencyLabelBytes: 0x4554480000000000000000000000000000000000000000000000000000000000 // 'ETH' as bytes32 string
         });
         nft = new NonfungiblePositionManager({
+            _owner: users.owner,
             _factory: address(poolFactory),
             _WETH9: address(weth),
             _tokenDescriptor: address(nftDescriptor),

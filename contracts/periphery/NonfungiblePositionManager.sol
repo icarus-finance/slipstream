@@ -17,6 +17,8 @@ import "./base/ERC721Permit.sol";
 import "./base/PeripheryValidation.sol";
 import "./base/SelfPermit.sol";
 
+import {EnumerableSet as IterableEnumerableSet} from "contracts/libraries/EnumerableSet.sol";
+
 /// @title NFT positions
 /// @notice Wraps CL positions in the ERC721 non-fungible token interface
 contract NonfungiblePositionManager is
@@ -28,7 +30,8 @@ contract NonfungiblePositionManager is
     PeripheryValidation,
     SelfPermit
 {
-    // details about the cl position
+    using IterableEnumerableSet for IterableEnumerableSet.UintSet;
+
     struct Position {
         // the nonce for permits
         uint96 nonce;
@@ -48,14 +51,6 @@ contract NonfungiblePositionManager is
         uint128 tokensOwed0;
         uint128 tokensOwed1;
     }
-    /// @dev Revert String Annotations:
-    /// NE - ERC721: approved query for nonexistent token
-    /// PS - Price slippage check
-    /// ID - Invalid token ID
-    /// ZA - Zero Address
-    /// NA - Not approved
-    /// NC - Not cleared
-    /// NO - Not Owner
 
     /// @dev IDs of pools assigned by this contract
     mapping(address => uint80) private _poolIds;
@@ -65,6 +60,8 @@ contract NonfungiblePositionManager is
 
     /// @dev The token ID position data
     mapping(uint256 => Position) private _positions;
+
+    mapping(address => mapping(address => IterableEnumerableSet.UintSet)) internal _userPositions;
 
     /// @dev The ID of the next token that will be minted. Skips 0
     uint176 private _nextId = 1;
@@ -83,11 +80,15 @@ contract NonfungiblePositionManager is
         _;
     }
 
-    constructor(address _factory, address _WETH9, address _tokenDescriptor, string memory name, string memory symbol)
-        ERC721Permit(name, symbol, "1")
-        PeripheryImmutableState(_factory, _WETH9)
-    {
-        owner = msg.sender;
+    constructor(
+        address _owner,
+        address _factory,
+        address _WETH9,
+        address _tokenDescriptor,
+        string memory name,
+        string memory symbol
+    ) ERC721Permit(name, symbol, "1") PeripheryImmutableState(_factory, _WETH9) {
+        owner = _owner;
         tokenDescriptor = _tokenDescriptor;
     }
 
@@ -112,7 +113,7 @@ contract NonfungiblePositionManager is
         )
     {
         Position memory position = _positions[tokenId];
-        require(position.poolId != 0, "ID");
+        require(position.poolId != 0);
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         return (
             position.nonce,
@@ -176,8 +177,8 @@ contract NonfungiblePositionManager is
 
         _mint(params.recipient, (tokenId = _nextId++));
 
-        bytes32 positionKey = PositionKey.compute(address(this), params.tickLower, params.tickUpper);
-        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) = pool.positions(positionKey);
+        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) =
+            pool.positions(PositionKey.compute(address(this), params.tickLower, params.tickUpper));
 
         // idempotent set
         uint80 poolId = cachePoolKey(address(pool), poolKey);
@@ -194,6 +195,8 @@ contract NonfungiblePositionManager is
             tokensOwed0: 0,
             tokensOwed1: 0
         });
+
+        _userPositions[params.recipient][address(pool)].add(tokenId);
 
         refundETH();
 
@@ -226,10 +229,7 @@ contract NonfungiblePositionManager is
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
 
         ICLPool pool = ICLPool(PoolAddress.computeAddress(factory, poolKey));
-
-        address gauge = pool.gauge();
-        bool isStaked = ownerOf(params.tokenId) == gauge;
-        if (isStaked) require(msg.sender == gauge, "NG");
+        require(ownerOf(params.tokenId) != pool.gauge());
 
         (liquidity, amount0, amount1) = addLiquidity(
             AddLiquidityParams({
@@ -241,28 +241,24 @@ contract NonfungiblePositionManager is
                 amount1Desired: params.amount1Desired,
                 amount0Min: params.amount0Min,
                 amount1Min: params.amount1Min,
-                recipient: isStaked ? gauge : address(this)
+                recipient: address(this)
             })
         );
 
-        bytes32 positionKey =
-            PositionKey.compute(isStaked ? gauge : address(this), position.tickLower, position.tickUpper);
-
         // this is now updated to the current transaction
-        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) = pool.positions(positionKey);
+        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) =
+            pool.positions(PositionKey.compute(address(this), position.tickLower, position.tickUpper));
 
-        if (!isStaked) {
-            position.tokensOwed0 += uint128(
-                FullMath.mulDiv(
-                    feeGrowthInside0LastX128 - position.feeGrowthInside0LastX128, position.liquidity, FixedPoint128.Q128
-                )
-            );
-            position.tokensOwed1 += uint128(
-                FullMath.mulDiv(
-                    feeGrowthInside1LastX128 - position.feeGrowthInside1LastX128, position.liquidity, FixedPoint128.Q128
-                )
-            );
-        }
+        position.tokensOwed0 += uint128(
+            FullMath.mulDiv(
+                feeGrowthInside0LastX128 - position.feeGrowthInside0LastX128, position.liquidity, FixedPoint128.Q128
+            )
+        );
+        position.tokensOwed1 += uint128(
+            FullMath.mulDiv(
+                feeGrowthInside1LastX128 - position.feeGrowthInside1LastX128, position.liquidity, FixedPoint128.Q128
+            )
+        );
 
         position.feeGrowthInside0LastX128 = feeGrowthInside0LastX128;
         position.feeGrowthInside1LastX128 = feeGrowthInside1LastX128;
@@ -292,20 +288,13 @@ contract NonfungiblePositionManager is
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         ICLPool pool = ICLPool(PoolAddress.computeAddress(factory, poolKey));
 
-        address gauge = pool.gauge();
-        bool isStaked = ownerOf(params.tokenId) == gauge;
-        if (!isStaked) {
-            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity);
-        } else {
-            (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity, gauge);
-        }
+        (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity);
 
-        require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, "PS");
+        require(amount0 >= params.amount0Min && amount1 >= params.amount1Min);
 
-        bytes32 positionKey =
-            PositionKey.compute(isStaked ? gauge : address(this), position.tickLower, position.tickUpper);
         // this is now updated to the current transaction
-        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) = pool.positions(positionKey);
+        (, uint256 feeGrowthInside0LastX128, uint256 feeGrowthInside1LastX128,,) =
+            pool.positions(PositionKey.compute(address(this), position.tickLower, position.tickUpper));
 
         /// @dev Casting to u128 and the sum of tokensOwed overflow can cause a loss to users.
         /// @dev This is more probable for tokens that have very high decimals.
@@ -313,18 +302,16 @@ contract NonfungiblePositionManager is
         position.tokensOwed0 += uint128(amount0);
         position.tokensOwed1 += uint128(amount1);
 
-        if (!isStaked) {
-            position.tokensOwed0 += uint128(
-                FullMath.mulDiv(
-                    feeGrowthInside0LastX128 - position.feeGrowthInside0LastX128, positionLiquidity, FixedPoint128.Q128
-                )
-            );
-            position.tokensOwed1 += uint128(
-                FullMath.mulDiv(
-                    feeGrowthInside1LastX128 - position.feeGrowthInside1LastX128, positionLiquidity, FixedPoint128.Q128
-                )
-            );
-        }
+        position.tokensOwed0 += uint128(
+            FullMath.mulDiv(
+                feeGrowthInside0LastX128 - position.feeGrowthInside0LastX128, positionLiquidity, FixedPoint128.Q128
+            )
+        );
+        position.tokensOwed1 += uint128(
+            FullMath.mulDiv(
+                feeGrowthInside1LastX128 - position.feeGrowthInside1LastX128, positionLiquidity, FixedPoint128.Q128
+            )
+        );
 
         position.feeGrowthInside0LastX128 = feeGrowthInside0LastX128;
         position.feeGrowthInside1LastX128 = feeGrowthInside1LastX128;
@@ -419,9 +406,23 @@ contract NonfungiblePositionManager is
     /// @inheritdoc INonfungiblePositionManager
     function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
         Position storage position = _positions[tokenId];
-        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, "NC");
+        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0);
+
+        PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
+        address pool = PoolAddress.computeAddress(factory, poolKey);
+        _userPositions[ownerOf(tokenId)][pool].remove(tokenId);
+
         delete _positions[tokenId];
         _burn(tokenId);
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721) {
+        /// @dev This hook should not run during mint / burn
+        if (from == address(0) || to == address(0)) return;
+        address pool = PoolAddress.computeAddress(factory, _poolIdToPoolKey[_positions[tokenId].poolId]);
+
+        _userPositions[from][pool].remove(tokenId);
+        _userPositions[to][pool].add(tokenId);
     }
 
     function _getAndIncrementNonce(uint256 tokenId) internal override returns (uint256) {
@@ -430,7 +431,7 @@ contract NonfungiblePositionManager is
 
     /// @inheritdoc IERC721
     function getApproved(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
-        require(_exists(tokenId), "NE");
+        require(_exists(tokenId));
 
         return _positions[tokenId].operator;
     }
@@ -454,5 +455,9 @@ contract NonfungiblePositionManager is
         require(_owner != address(0));
         owner = _owner;
         emit TransferOwnership(_owner);
+    }
+
+    function userPositions(address user, address pool) external view override returns (uint256[] memory) {
+        return _userPositions[user][pool].values();
     }
 }

@@ -17,7 +17,7 @@ contract GetUnstakedFeeTest is CLFactoryTest {
             sqrtPriceX96: encodePriceSqrt(1, 1)
         });
 
-        gauge = CLGauge(voter.gauges(pool));
+        gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
 
         assertEq(voter.isAlive(address(gauge)), true);
         assertEq(uint256(poolFactory.getUnstakedFee(pool)), 100_000);

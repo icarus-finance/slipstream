@@ -77,6 +77,7 @@ contract DeployCL is Script {
         nftDescriptor =
             new NonfungibleTokenPositionDescriptor({_WETH9: address(weth), _nativeCurrencyLabelBytes: bytes32("ETH")});
         nft = new NonfungiblePositionManager({
+            _owner: deployerAddress,
             _factory: address(poolFactory),
             _WETH9: address(weth),
             _tokenDescriptor: address(nftDescriptor),
