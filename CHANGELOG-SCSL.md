@@ -25,10 +25,6 @@ A list of all the changes made to the Slipstream V2 pool contract (forked from `
 - Added `tokens()` view function.
 - Added `rewardGrowthGlobalX128` argument in calling `update()` on ticks.
 
-### Tests
-
-Removed all.
-
 ## Periphery
 
 Code size optimizations were applied when needed: removing string errors from various `require()` statments.
@@ -45,7 +41,3 @@ Code size optimizations were applied when needed: removing string errors from va
 ### SugarHelper (contracts/periphery/SugarHelper.sol)
 
 - Change one condition check from AND to OR in `estimateAmount0()` and `estimateAmount1()` functions.
-
-### Tests
-
-Removed all.
