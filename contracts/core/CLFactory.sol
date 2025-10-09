@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
+import "@openzeppelin/contracts/proxy/Clones.sol";
+import "@nomad-xyz/src/ExcessivelySafeCall.sol";
 import "./interfaces/ICLFactory.sol";
 import "./interfaces/fees/IFeeModule.sol";
 import "./interfaces/IVoter.sol";
 import "./interfaces/IFactoryRegistry.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
-import "@nomad-xyz/src/ExcessivelySafeCall.sol";
 import "./CLPool.sol";
 
 /// @title Canonical CL factory

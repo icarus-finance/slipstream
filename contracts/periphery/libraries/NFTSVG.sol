@@ -27,7 +27,7 @@ library NFTSVG {
         return string(
             abi.encodePacked(
                 '<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">',
-                '<g id="NFT Aero" clip-path="url(#clip0_1098_820)">',
+                '<g id="NFT Irs" clip-path="url(#clip0_1098_820)">',
                 '<rect width="800" height="800" fill="#252525"/>',
                 '<g id="shadow">',
                 '<g id="Group 465">',
@@ -89,7 +89,7 @@ library NFTSVG {
         svg = string(
             abi.encodePacked(
                 '<circle id="circle" cx="400" cy="399.837" r="165.837" fill="#044FEB"/>',
-                '<g id="aero"><g id="AERODROME">',
+                '<g id="irs"><g id="ICARUS">',
                 '<path d="M305.685 409.746L303.986 405.868H293.765L292.066 409.746H285.186L294.416 389.927H303.335L312.537 409.746H305.685ZM295.747 401.394H302.004L298.89 394.288L295.747 401.394Z" fill="white"/>',
                 '<path d="M334.374 394.769H319.652V397.713H334.374V401.96H319.652V404.905H334.374V409.746H313.423V389.927H334.374V394.769Z" fill="white"/>'
                 '<path d="M358.868 397.345C358.868 400.403 357.396 402.81 354.989 403.971L358.557 409.746H351.195L348.251 404.792H341.937V409.746H335.708V389.927H351.28C355.782 389.927 358.868 392.929 358.868 397.345ZM341.937 395.194V399.525H349.865C351.026 399.525 352.639 399.525 352.639 397.345C352.639 395.194 351.026 395.194 349.865 395.194H341.937Z" fill="white"/>',
