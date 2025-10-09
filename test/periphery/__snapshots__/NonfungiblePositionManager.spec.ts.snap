@@ -24,9 +24,9 @@ exports[`NonfungiblePositionManager #mint gas mint for same pool, different tick
 
 exports[`NonfungiblePositionManager #mint gas mint on same ticks 1`] = `430824`;
 
-exports[`NonfungiblePositionManager #permit owned by eoa gas 1`] = `64513`;
+exports[`NonfungiblePositionManager #permit owned by eoa gas 1`] = `64489`;
 
-exports[`NonfungiblePositionManager #permit owned by verifying contract gas 1`] = `68400`;
+exports[`NonfungiblePositionManager #permit owned by verifying contract gas 1`] = `68376`;
 
 exports[`NonfungiblePositionManager #positions gas 1`] = `19977`;
 

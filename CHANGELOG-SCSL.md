@@ -9,7 +9,6 @@ A list of all the changes made to the audited version of `velodrome/superchain-s
 - Deleted `gaugeFactory` and `nft` addresses.
 - Added `factoryRegistry` address.
 - Defaulted to msg.sender as owner, swapFeeManager, unstakedFeeManager in `constructor()`.
-- Added initialization of additional tick spacing in `constructor()`.
 - Removed deterministic assignment of gauge address in `craetePool()` using `CreateXLibrary`.
 
 ### CLPool (contracts/core/CLPool.sol)

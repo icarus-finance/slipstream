@@ -76,7 +76,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
         poolImplementation = new CLPool();
         poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation)});
         // backward compatibility with the original uniV3 fee structure and tick spacing
-        // poolFactory.enableTickSpacing(10, 500);
+        poolFactory.enableTickSpacing(10, 500);
         poolFactory.enableTickSpacing(60, 3_000);
         // 200 tick spacing fee is manually overriden in tests as it is part of default settings
 

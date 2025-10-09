@@ -56,7 +56,6 @@ contract CLFactory is ICLFactory {
         emit DefaultUnstakedFeeChanged(0, 100_000);
 
         _enableTickSpacing(1, 100);
-        _enableTickSpacing(10, 500);
         _enableTickSpacing(50, 500);
         _enableTickSpacing(100, 500);
         _enableTickSpacing(200, 3_000);
