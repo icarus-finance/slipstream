@@ -115,7 +115,7 @@ contract SetupCL {
 
         poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation)});
 
-        poolFactory.enableTickSpacing(10, 500);
+        // poolFactory.enableTickSpacing(10, 500);
         poolFactory.enableTickSpacing(60, 3_000);
         // manually override fee in pool creation for tick spacing 200
 

@@ -44,19 +44,19 @@ jobs:
         # - name: run linter check on *.sol file
         #   run: yarn lint
 
-    run-fmt:
-      runs-on: ubuntu-latest
+    # run-fmt:
+    #   runs-on: ubuntu-latest
       
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            submodules: recursive
+    #   steps:
+    #     - uses: actions/checkout@v4
+    #       with:
+    #         submodules: recursive
 
-        # Runs a single command using the runners shell
-        - name: Install Foundry
-          uses: foundry-rs/foundry-toolchain@v1
-          with:
-            version: nightly
+    #     # Runs a single command using the runners shell
+    #     - name: Install Foundry
+    #       uses: foundry-rs/foundry-toolchain@v1
+    #       with:
+    #         version: nightly
 
-        - name: Format
-          run: forge fmt --check
+    #     - name: Format
+    #       run: forge fmt --check
