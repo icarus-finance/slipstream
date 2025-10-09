@@ -1,5 +1,60 @@
 # CHANGELOG-SCSL (Superchain Slipstream)
 
+A list of all the changes made to the audited version of `velodrome/superchain-slipstream` repository.
+
+## Core
+
+### CLFactory (contracts/core/CLFactory.sol)
+
+- Deleted `gaugeFactory` and `nft` addresses.
+- Added `factoryRegistry` address.
+- Defaulted to msg.sender as owner, swapFeeManager, unstakedFeeManager in `constructor()`.
+- Added initialization of additional tick spacing in `constructor()`.
+- Removed deterministic assignment of gauge address in `craetePool()` using `CreateXLibrary`.
+
+### CLPool (contracts/core/CLPool.sol)
+
+- Added `factoryRegistry` address.
+- Added `onlyGaugeFactory()` modifier.
+- Assigned factoryRegistry instead of `gauge` and `nft` at `initialize()`.
+- Added `positionUpdate` argument to `stake()` and conditional check to update the position information.
+- Added `setGaugeAndPositionManager()` callable by the `GaugeFactory` to set the `gauge` and `nft` addresses.
+
+## Gauge
+
+### CLGauge (contracts/gauge/CLGauge.sol)
+
+- Add `WETH9` adn `gaugeFactory` addresses.
+- Remove `bridge` address.
+- Change `initialize()` to initialize `WETH9`.
+- Remove `Q128` constant in favor of `FixedPoint128.Q128`.
+- Add `positionUpdate` argument to `pool.stake()` calls.
+- Add conditional check in `withdraw()` to not call `pool.stake()` if `liquidityToStake`is 0.
+- Change implementation of `stakedValues()`
+- Add `supportsPayable()` function.
+- Change authorized callers in `notifyRewardAmount()` and `notifyRewardWithoutClaim()`.
+
+### CLGaugeFactory (contracts/gauge/CLGaugeFactory.sol)
+
+- Deleted `xerc20` and `bridge` addresses.
+- Added `implementation` address.
+- Changed `constructor()`.
+- Added `setNonfungiblePositionManager()`.
+- Removed deterministic deployment of the gauge in `craeteGauge()` using `CreateXLibrary`.
+- Use `Clones.cloneDeterministic()` to deploy gauges.
+
+## Periphery
+
+- Changed mentions of Aerodrome to Icarus in `NFTDescriptor` and `NFTSVG` contracts.
+
+## Libraries
+
+- Renamed `VelodromeTimeLibrary` to `ProtocolTimeLibrary`.
+
+---
+
+# For more curious minds
+
 A list of all the changes made to the Slipstream V2 pool contract (forked from `aerodrome/slipstream` repository) by copying over pool contracts of `velodrome/superchain-slipstream` repository.
 
 ## Core
