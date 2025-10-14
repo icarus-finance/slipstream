@@ -11,3 +11,5 @@ broadcast
 .env
 
 echidna_*_corpus/
+
+.DS_Store
