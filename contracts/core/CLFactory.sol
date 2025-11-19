@@ -21,6 +21,12 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     IFactoryRegistry public immutable override factoryRegistry;
     /// @inheritdoc ICLFactory
+    address public override nft;
+    /// @inheritdoc ICLFactory
+    address public override gaugeFactory;
+    /// @inheritdoc ICLFactory
+    address public override gaugeImplementation;
+    /// @inheritdoc ICLFactory
     address public override owner;
     /// @inheritdoc ICLFactory
     address public override swapFeeManager;
@@ -42,12 +48,14 @@ contract CLFactory is ICLFactory {
     int24[] private _tickSpacings;
     mapping(address => mapping(address => mapping(int24 => address))) internal _getPool;
 
-    constructor(address _voter, address _poolImplementation) {
+    constructor(address _voter, address _poolImplementation, address _gaugeFactory, address _gaugeImplementation) {
         owner = msg.sender;
         swapFeeManager = msg.sender;
         unstakedFeeManager = msg.sender;
         voter = IVoter(_voter);
         factoryRegistry = IVoter(_voter).factoryRegistry();
+        gaugeFactory = _gaugeFactory;
+        gaugeImplementation = _gaugeImplementation;
         poolImplementation = _poolImplementation;
         defaultUnstakedFee = 100_000;
         emit OwnerChanged(address(0), msg.sender);
@@ -83,16 +91,17 @@ contract CLFactory is ICLFactory {
         require(token0 != address(0));
         require(tickSpacingToFee[tickSpacing] != 0);
         require(_getPool[token0][token1][tickSpacing] == address(0));
-        pool = Clones.cloneDeterministic({
-            master: poolImplementation,
-            salt: keccak256(abi.encode(token0, token1, tickSpacing))
-        });
+        bytes32 _salt = keccak256(abi.encode(token0, token1, tickSpacing));
+        pool = Clones.cloneDeterministic({master: poolImplementation, salt: _salt});
+        address gauge =
+            Clones.predictDeterministicAddress({master: gaugeImplementation, salt: _salt, deployer: gaugeFactory});
         CLPool(pool).initialize({
             _factory: address(this),
             _token0: token0,
             _token1: token1,
             _tickSpacing: tickSpacing,
-            _factoryRegistry: address(factoryRegistry),
+            _gauge: gauge,
+            _nft: nft,
             _sqrtPriceX96: sqrtPriceX96
         });
         allPools.push(pool);
@@ -237,5 +246,13 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     function isPool(address pool) external view override returns (bool) {
         return _isPool[pool];
+    }
+
+    /// @inheritdoc ICLFactory
+    function setNonfungiblePositionManager(address _nft) external override {
+        require(nft == address(0), "AI");
+        require(owner == msg.sender, "NA");
+        require(_nft != address(0));
+        nft = _nft;
     }
 }

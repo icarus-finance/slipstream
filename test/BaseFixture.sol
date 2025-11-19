@@ -72,17 +72,17 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
 
         deployDependencies();
 
+        // deploy gauges and associated contracts
+        gaugeImplementation = new CLGauge();
+        gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
+
         // deploy pool and associated contracts
         poolImplementation = new CLPool();
-        poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation)});
+        poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation), _gaugeFactory: address(gaugeFactory), _gaugeImplementation: address(gaugeImplementation)});
         // backward compatibility with the original uniV3 fee structure and tick spacing
         poolFactory.enableTickSpacing(10, 500);
         poolFactory.enableTickSpacing(60, 3_000);
         // 200 tick spacing fee is manually overriden in tests as it is part of default settings
-
-        // deploy gauges and associated contracts
-        gaugeImplementation = new CLGauge();
-        gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
@@ -103,7 +103,7 @@ abstract contract BaseFixture is Test, Constants, Events, PoolUtils {
 
         // set nftmanager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        // poolFactory.setNonfungiblePositionManager(address(nft));
+        poolFactory.setNonfungiblePositionManager(address(nft));
         vm.stopPrank();
 
         // approve gauge in factory registry

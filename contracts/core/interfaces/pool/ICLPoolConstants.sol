@@ -30,10 +30,6 @@ interface ICLPoolConstants {
     /// @return The nft manager contract address
     function nft() external view returns (address);
 
-    /// @notice The factory registry that manages pool <> gauge <> reward factory relationships
-    /// @return The factory registry contract address
-    function factoryRegistry() external view returns (address);
-
     /// @notice The pool tick spacing
     /// @dev Ticks can only be used at multiples of this value, minimum of 1 and always positive
     /// e.g.: a tickSpacing of 3 means ticks can be initialized every 3rd tick, i.e., ..., -6, -3, 0, 3, 6, ...

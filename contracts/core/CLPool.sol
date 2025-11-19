@@ -47,8 +47,6 @@ contract CLPool is ICLPool {
     address public override gauge;
     /// @inheritdoc ICLPoolConstants
     address public override nft;
-    /// @inheritdoc ICLPoolConstants
-    address public override factoryRegistry;
 
     struct Slot0 {
         // the current price
@@ -137,20 +135,14 @@ contract CLPool is ICLPool {
         _;
     }
 
-    /// @dev Prevents calling a function from anyone except the gauge factory
-    modifier onlyGaugeFactory() {
-        (, address gaugeFactory) = IFactoryRegistry(factoryRegistry).factoriesToPoolFactory(address(factory));
-        require(msg.sender == gaugeFactory, "NGF");
-        _;
-    }
-
     /// @inheritdoc ICLPoolActions
     function initialize(
         address _factory,
         address _token0,
         address _token1,
         int24 _tickSpacing,
-        address _factoryRegistry,
+        address _gauge,
+        address _nft,
         uint160 _sqrtPriceX96
     ) external override {
         require(factory == address(0) && _factory != address(0));
@@ -158,7 +150,8 @@ contract CLPool is ICLPool {
         token0 = _token0;
         token1 = _token1;
         tickSpacing = _tickSpacing;
-        factoryRegistry = _factoryRegistry;
+        gauge = _gauge;
+        nft = _nft;
 
         maxLiquidityPerTick = Tick.tickSpacingToMaxLiquidityPerTick(_tickSpacing);
 
@@ -1042,12 +1035,5 @@ contract CLPool is ICLPool {
         }
 
         emit CollectFees(msg.sender, amount0, amount1);
-    }
-
-    /// @inheritdoc ICLPoolActions
-    function setGaugeAndPositionManager(address _gauge, address _nft) external override lock onlyGaugeFactory {
-        require(gauge == address(0));
-        gauge = _gauge;
-        nft = _nft;
     }
 }

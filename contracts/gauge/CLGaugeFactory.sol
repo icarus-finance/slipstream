@@ -57,7 +57,5 @@ contract CLGaugeFactory is ICLGaugeFactory {
             _tickSpacing: tickSpacing,
             _isPool: _isPool
         });
-        // Initialize
-        ICLPool(_pool).setGaugeAndPositionManager(_gauge, nft);
     }
 }

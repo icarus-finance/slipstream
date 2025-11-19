@@ -111,17 +111,17 @@ contract SetupCL {
 
         rewardToken.mint(address(voter), 10000000000e18);
 
+        // deploy gauges and associated contracts
+        gaugeImplementation = new CLGauge();
+        gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
+
         poolImplementation = new CLPool();
 
-        poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation)});
+        poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation), _gaugeFactory: address(gaugeFactory), _gaugeImplementation: address(gaugeImplementation)});
 
         poolFactory.enableTickSpacing(10, 500);
         poolFactory.enableTickSpacing(60, 3_000);
         // manually override fee in pool creation for tick spacing 200
-
-        // deploy gauges and associated contracts
-        gaugeImplementation = new CLGauge();
-        gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
@@ -138,7 +138,7 @@ contract SetupCL {
 
         // set nft manager in the factories
         gaugeFactory.setNonfungiblePositionManager(address(nft));
-        // poolFactory.setNonfungiblePositionManager(address(nft));
+        poolFactory.setNonfungiblePositionManager(address(nft));
 
         factoryRegistry.approve({
             poolFactory: address(poolFactory),

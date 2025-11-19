@@ -17,7 +17,6 @@ import {FullMath} from "contracts/core/libraries/FullMath.sol";
 import {FixedPoint128} from "contracts/core/libraries/FixedPoint128.sol";
 import {ProtocolTimeLibrary} from "contracts/libraries/ProtocolTimeLibrary.sol";
 import {IReward} from "contracts/gauge/interfaces/IReward.sol";
-import {ICLGaugeFactory} from "contracts/gauge/interfaces/ICLGaugeFactory.sol";
 
 contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -30,11 +29,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     IVoter public override voter;
     /// @inheritdoc ICLGauge
     ICLPool public override pool;
-    /// @inheritdoc ICLGauge
-    ICLGaugeFactory public override gaugeFactory;
 
-    /// @inheritdoc ICLGauge
-    address public override WETH9;
     /// @inheritdoc ICLGauge
     address public override feesVotingReward;
     /// @inheritdoc ICLGauge
@@ -88,7 +83,6 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
         rewardToken = _rewardToken;
         voter = IVoter(_voter);
         nft = INonfungiblePositionManager(_nft);
-        WETH9 = nft.WETH9();
         token0 = _token0;
         token1 = _token1;
         tickSpacing = _tickSpacing;
@@ -233,18 +227,8 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     }
 
     /// @inheritdoc ICLGauge
-    function supportsPayable() external view override returns (bool) {
-        return token0 == WETH9 || token1 == WETH9;
-    }
-
-    /// @inheritdoc ICLGauge
     function stakedValues(address depositor) external view override returns (uint256[] memory) {
         return _stakes[depositor].values();
-    }
-
-    /// @inheritdoc ICLGauge
-    function stakedByIndex(address depositor, uint256 index) external view override returns (uint256) {
-        return _stakes[depositor].at(index);
     }
 
     /// @inheritdoc ICLGauge
