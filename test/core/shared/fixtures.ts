@@ -85,8 +85,11 @@ export const poolFixture: Fixture<PoolFixture> = async function (): Promise<Pool
   const mockTimePool = (await MockTimeCLPoolFactory.deploy()) as MockTimeCLPool
   const mockTimePoolDeployer = (await MockTimeCLPoolDeployerFactory.deploy(
     mockVoter.address,
-    mockTimePool.address
+    mockTimePool.address,
+    gaugeFactory.address,
+    gaugeImplementation.address
   )) as CLFactory
+  await mockTimePoolDeployer.setNonfungiblePositionManager('0x0000000000000000000000000000000000000001')
   const customUnstakedFeeModule = (await CustomUnstakedFeeModuleFactory.deploy(
     mockTimePoolDeployer.address
   )) as CustomUnstakedFeeModule

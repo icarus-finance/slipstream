@@ -1,30 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CLPool gas tests fee is off #burn above current price burn entire position after some time passes 1`] = `108869`;
+exports[`CLPool gas tests fee is off #burn above current price burn entire position after some time passes 1`] = `108852`;
 
-exports[`CLPool gas tests fee is off #burn above current price burn when only position using ticks 1`] = `108869`;
+exports[`CLPool gas tests fee is off #burn above current price burn when only position using ticks 1`] = `108852`;
 
-exports[`CLPool gas tests fee is off #burn above current price entire position burn but other positions are using the ticks 1`] = `100450`;
+exports[`CLPool gas tests fee is off #burn above current price entire position burn but other positions are using the ticks 1`] = `100428`;
 
-exports[`CLPool gas tests fee is off #burn above current price partial position burn 1`] = `105250`;
+exports[`CLPool gas tests fee is off #burn above current price partial position burn 1`] = `105228`;
 
-exports[`CLPool gas tests fee is off #burn around current price burn entire position after some time passes 1`] = `126164`;
+exports[`CLPool gas tests fee is off #burn around current price burn entire position after some time passes 1`] = `126147`;
 
-exports[`CLPool gas tests fee is off #burn around current price burn when only position using ticks 1`] = `121038`;
+exports[`CLPool gas tests fee is off #burn around current price burn when only position using ticks 1`] = `121020`;
 
-exports[`CLPool gas tests fee is off #burn around current price entire position burn but other positions are using the ticks 1`] = `105261`;
+exports[`CLPool gas tests fee is off #burn around current price entire position burn but other positions are using the ticks 1`] = `105239`;
 
-exports[`CLPool gas tests fee is off #burn around current price partial position burn 1`] = `110061`;
+exports[`CLPool gas tests fee is off #burn around current price partial position burn 1`] = `110039`;
 
-exports[`CLPool gas tests fee is off #burn below current price burn entire position after some time passes 1`] = `118328`;
+exports[`CLPool gas tests fee is off #burn below current price burn entire position after some time passes 1`] = `118310`;
 
-exports[`CLPool gas tests fee is off #burn below current price burn when only position using ticks 1`] = `118328`;
+exports[`CLPool gas tests fee is off #burn below current price burn when only position using ticks 1`] = `118310`;
 
-exports[`CLPool gas tests fee is off #burn below current price entire position burn but other positions are using the ticks 1`] = `101073`;
+exports[`CLPool gas tests fee is off #burn below current price entire position burn but other positions are using the ticks 1`] = `101051`;
 
-exports[`CLPool gas tests fee is off #burn below current price partial position burn 1`] = `105873`;
+exports[`CLPool gas tests fee is off #burn below current price partial position burn 1`] = `105851`;
 
-exports[`CLPool gas tests fee is off #collect close to worst case 1`] = `50991`;
+exports[`CLPool gas tests fee is off #collect close to worst case 1`] = `50969`;
 
 exports[`CLPool gas tests fee is off #increaseObservationCardinalityNext grow by 1 slot 1`] = `53713`;
 
@@ -38,42 +38,42 @@ exports[`CLPool gas tests fee is off #mint above current price new position mint
 
 exports[`CLPool gas tests fee is off #mint above current price second position in same range 1`] = `136513`;
 
-exports[`CLPool gas tests fee is off #mint around current price add to position after some time passes 1`] = `160363`;
+exports[`CLPool gas tests fee is off #mint around current price add to position after some time passes 1`] = `160451`;
 
-exports[`CLPool gas tests fee is off #mint around current price add to position existing 1`] = `151153`;
+exports[`CLPool gas tests fee is off #mint around current price add to position existing 1`] = `151241`;
 
-exports[`CLPool gas tests fee is off #mint around current price new position mint first in range 1`] = `346027`;
+exports[`CLPool gas tests fee is off #mint around current price new position mint first in range 1`] = `346115`;
 
-exports[`CLPool gas tests fee is off #mint around current price second position in same range 1`] = `168253`;
+exports[`CLPool gas tests fee is off #mint around current price second position in same range 1`] = `168341`;
 
-exports[`CLPool gas tests fee is off #mint below current price add to position after some time passes 1`] = `119987`;
+exports[`CLPool gas tests fee is off #mint below current price add to position after some time passes 1`] = `120053`;
 
-exports[`CLPool gas tests fee is off #mint below current price add to position existing 1`] = `119987`;
+exports[`CLPool gas tests fee is off #mint below current price add to position existing 1`] = `120053`;
 
-exports[`CLPool gas tests fee is off #mint below current price new position mint first in range 1`] = `326549`;
+exports[`CLPool gas tests fee is off #mint below current price new position mint first in range 1`] = `326615`;
 
-exports[`CLPool gas tests fee is off #mint below current price second position in same range 1`] = `137087`;
+exports[`CLPool gas tests fee is off #mint below current price second position in same range 1`] = `137153`;
 
-exports[`CLPool gas tests fee is off #poke best case 1`] = `58984`;
+exports[`CLPool gas tests fee is off #poke best case 1`] = `58962`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block moves tick, no initialized crossings 1`] = `149654`;
+exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block moves tick, no initialized crossings 1`] = `149676`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block with no tick movement 1`] = `129906`;
+exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block with no tick movement 1`] = `129928`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap crossing a single initialized tick 1`] = `191240`;
+exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap crossing a single initialized tick 1`] = `191262`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap crossing several initialized ticks 1`] = `271180`;
+exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap crossing several initialized ticks 1`] = `271202`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap, no initialized crossings 1`] = `171996`;
+exports[`CLPool gas tests fee is off #swapExact0For1 first swap in block, large swap, no initialized crossings 1`] = `172018`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 large swap crossing several initialized ticks after some time passes 1`] = `271180`;
+exports[`CLPool gas tests fee is off #swapExact0For1 large swap crossing several initialized ticks after some time passes 1`] = `271202`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 large swap crossing several initialized ticks second time after some time passes 1`] = `290380`;
+exports[`CLPool gas tests fee is off #swapExact0For1 large swap crossing several initialized ticks second time after some time passes 1`] = `290402`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block moves tick, no initialized crossings 1`] = `149654`;
+exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block moves tick, no initialized crossings 1`] = `149676`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block with no tick movement 1`] = `130017`;
+exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block with no tick movement 1`] = `130039`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block, large swap crossing a single initialized tick 1`] = `173928`;
+exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block, large swap crossing a single initialized tick 1`] = `173950`;
 
-exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block, large swap crossing several initialized ticks 1`] = `253846`;
+exports[`CLPool gas tests fee is off #swapExact0For1 second swap in block, large swap crossing several initialized ticks 1`] = `253868`;

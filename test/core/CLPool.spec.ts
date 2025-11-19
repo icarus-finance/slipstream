@@ -126,6 +126,7 @@ describe('CLPool', () => {
         token1.address,
         TICK_SPACINGS[FeeAmount.MEDIUM],
         ethers.constants.AddressZero,
+        ethers.constants.AddressZero,
         encodePriceSqrt(1, 1)
       )
       await expect(
@@ -134,6 +135,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           encodePriceSqrt(1, 1)
         )
@@ -147,6 +149,7 @@ describe('CLPool', () => {
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
           ethers.constants.AddressZero,
+          ethers.constants.AddressZero,
           1
         )
       ).to.be.revertedWith('R')
@@ -156,6 +159,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           MIN_SQRT_RATIO.sub(1)
         )
@@ -169,6 +173,7 @@ describe('CLPool', () => {
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
           ethers.constants.AddressZero,
+          ethers.constants.AddressZero,
           MAX_SQRT_RATIO
         )
       ).to.be.revertedWith('R')
@@ -178,6 +183,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           BigNumber.from(2).pow(160).sub(1)
         )
@@ -190,6 +196,7 @@ describe('CLPool', () => {
         token1.address,
         TICK_SPACINGS[FeeAmount.MEDIUM],
         ethers.constants.AddressZero,
+        ethers.constants.AddressZero,
         MIN_SQRT_RATIO
       )
       expect((await pool.slot0()).tick).to.eq(getMinTick(1))
@@ -200,6 +207,7 @@ describe('CLPool', () => {
         token0.address,
         token1.address,
         TICK_SPACINGS[FeeAmount.MEDIUM],
+        ethers.constants.AddressZero,
         ethers.constants.AddressZero,
         MAX_SQRT_RATIO.sub(1)
       )
@@ -212,6 +220,7 @@ describe('CLPool', () => {
         token0.address,
         token1.address,
         TICK_SPACINGS[FeeAmount.MEDIUM],
+        ethers.constants.AddressZero,
         ethers.constants.AddressZero,
         price
       )
@@ -227,6 +236,7 @@ describe('CLPool', () => {
         token0.address,
         token1.address,
         TICK_SPACINGS[FeeAmount.MEDIUM],
+        ethers.constants.AddressZero,
         ethers.constants.AddressZero,
         encodePriceSqrt(1, 1)
       )
@@ -247,6 +257,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           sqrtPriceX96
         )
@@ -288,6 +299,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           encodePriceSqrt(1, 10)
         )
@@ -1148,7 +1160,7 @@ describe('CLPool', () => {
     const p0 = (await sqrtTickMath.getSqrtRatioAtTick(-24081)).add(1)
     // initialize at a price of ~0.3 token1/token0
     // meaning if you swap in 2 token0, you should end up getting 0 token1
-    await pool.initialize(factory.address, token0.address, token1.address, 1, ethers.constants.AddressZero, p0)
+    await pool.initialize(factory.address, token0.address, token1.address, 1, ethers.constants.AddressZero, ethers.constants.AddressZero, p0)
     expect(await pool.liquidity(), 'current pool liquidity is 1').to.eq(0)
     expect((await pool.slot0()).tick, 'pool tick is -24081').to.eq(-24081)
 
@@ -1310,6 +1322,7 @@ describe('CLPool', () => {
           token0.address,
           token1.address,
           TICK_SPACINGS[FeeAmount.MEDIUM],
+          ethers.constants.AddressZero,
           ethers.constants.AddressZero,
           encodePriceSqrt(1, 1)
         )

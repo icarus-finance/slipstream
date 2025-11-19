@@ -69,18 +69,18 @@ const v3CoreFactoryFixture: Fixture<{
     mockVotingEscrow.address
   )) as MockVoter
 
-  const factory = (await Factory.deploy(mockVoter.address, pool.address)) as ICLFactory
-  const customUnstakedFeeModule = (await CustomUnstakedFeeModuleFactory.deploy(
-    factory.address
-  )) as CustomUnstakedFeeModule
-  await factory.setUnstakedFeeModule(customUnstakedFeeModule.address)
-
+  
   const gaugeImplementation = (await GaugeImplementationFactory.deploy()) as CLGauge
   const gaugeFactory = (await GaugeFactoryFactory.deploy(
     mockVoter.address,
     gaugeImplementation.address
   )) as CLGaugeFactory
-  // await factory.setGaugeFactory(gaugeFactory.address, gaugeImplementation.address)
+
+  const factory = (await Factory.deploy(mockVoter.address, pool.address, gaugeFactory.address, gaugeImplementation.address)) as ICLFactory
+  const customUnstakedFeeModule = (await CustomUnstakedFeeModuleFactory.deploy(
+    factory.address
+  )) as CustomUnstakedFeeModule
+  await factory.setUnstakedFeeModule(customUnstakedFeeModule.address)
 
   const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
   const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()
@@ -106,7 +106,7 @@ const v3CoreFactoryFixture: Fixture<{
     nftDescriptor.address
   )) as MockTimeNonfungiblePositionManager
 
-  // await factory.setNonfungiblePositionManager(nft.address)
+  await factory.setNonfungiblePositionManager(nft.address)
   await gaugeFactory.setNonfungiblePositionManager(nft.address)
 
   // approve pool factory <=> gauge factory combination
