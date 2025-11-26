@@ -185,7 +185,9 @@ contract CLFactory is ICLFactory {
     /// @inheritdoc ICLFactory
     function getUnstakedFee(address pool) external view override returns (uint24) {
         address gauge = voter.gauges(pool);
-        if (!voter.isAlive(gauge) || gauge == address(0)) {
+        // Gagues that do not exist yet should still acrrue Unstaked Fees.
+        // Only when gauge exists but was "killed" it should not keep receiving Unstaked Fees.
+        if (gauge != address(0) && !voter.isAlive(gauge)) {
             return 0;
         }
         if (unstakedFeeModule != address(0)) {

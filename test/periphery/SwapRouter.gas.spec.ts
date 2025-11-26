@@ -227,12 +227,15 @@ describe('SwapRouter gas tests', function () {
 
   // TODO should really throw this in the fixture
   beforeEach('intialize feeGrowthGlobals', async () => {
-    await exactInput([tokens[0].address, tokens[1].address], 1, 0)
-    await exactInput([tokens[1].address, tokens[0].address], 1, 0)
-    await exactInput([tokens[1].address, tokens[2].address], 1, 0)
-    await exactInput([tokens[2].address, tokens[1].address], 1, 0)
-    await exactInput([tokens[0].address, weth9.address], 1, 0)
-    await exactInput([weth9.address, tokens[0].address], 1, 0)
+    // Use larger amounts (1000) instead of 1 to ensure fees are generated
+    // With 1 wei swaps, integer division rounds fees to 0
+    // Amount must be large enough to generate fees but small enough to not move ticks
+    await exactInput([tokens[0].address, tokens[1].address], 1000, 0)
+    await exactInput([tokens[1].address, tokens[0].address], 1000, 0)
+    await exactInput([tokens[1].address, tokens[2].address], 1000, 0)
+    await exactInput([tokens[2].address, tokens[1].address], 1000, 0)
+    await exactInput([tokens[0].address, weth9.address], 1000, 0)
+    await exactInput([weth9.address, tokens[0].address], 1000, 0)
   })
 
   beforeEach('ensure feeGrowthGlobals are >0', async () => {
@@ -245,10 +248,12 @@ describe('SwapRouter gas tests', function () {
       )
     )
 
+    // With 10% unstaked fee to gauge, 90% of swap fees accrue to feeGrowthGlobal
+    // Updated values based on 1000 wei swaps with 0.3% swap fee and 10% unstaked fee  
     expect(slots).to.deep.eq([
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
-      ['340290874192793283295456993856614', '340290874192793283295456993856614'],
+      ['680581748385586566590913987713229', '680581748385586566590913987713229'],
+      ['680581748385586566590913987713229', '680581748385586566590913987713229'],
+      ['680581748385586566590913987713229', '680581748385586566590913987713229'],
     ])
   })
 
