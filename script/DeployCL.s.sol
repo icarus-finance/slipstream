@@ -62,13 +62,13 @@ contract DeployCL is Script {
         require(address(voter) != address(0)); // sanity check for constants file fillled out correctly
 
         vm.startBroadcast(deployerAddress);
-        // deploy pool + factory
-        poolImplementation = new CLPool();
-        poolFactory = new CLFactory({_voter: voter, _poolImplementation: address(poolImplementation)});
-
-        // deploy gauges
+        // deploy gauges and associated contracts
         gaugeImplementation = new CLGauge();
-        gaugeFactory = new CLGaugeFactory({_voter: voter, _implementation: address(gaugeImplementation)});
+        gaugeFactory = new CLGaugeFactory({_voter: address(voter), _implementation: address(gaugeImplementation)});
+
+        // deploy pool and associated contracts
+        poolImplementation = new CLPool();
+        poolFactory = new CLFactory({_voter: address(voter), _poolImplementation: address(poolImplementation), _gaugeFactory: address(gaugeFactory), _gaugeImplementation: address(gaugeImplementation)});
 
         string memory name = "Icarus CL Pool";
         string memory symbol = "IRS_CL_POOL";
