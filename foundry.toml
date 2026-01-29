@@ -19,6 +19,8 @@ runs = 5000
 
 [rpc_endpoints]
 rise_testnet = "${RISE_TESTNET_RPC_URL}"
+rise = "${RISE_RPC_URL}"
 
 [etherscan]
 rise_testnet = { key = "", url = "${RISE_TESTNET_ETHERSCAN_VERIFIER_URL}" }
+rise = { key = "", url = "${RISE_ETHERSCAN_VERIFIER_URL}" }
