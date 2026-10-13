@@ -56,6 +56,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Check out core contracts for integration tests
+        uses: actions/checkout@v4
+        with:
+          repository: icarus-finance/contracts
+          ref: ${{ vars.ICARUS_CORE_REF || 'main' }}
+          path: .core-contracts
+          submodules: recursive
       - uses: actions/setup-node@v4
       - name: Install dev dependencies
         run: yarn install
@@ -69,7 +76,12 @@ jobs:
       - name: Install deps
         run: forge install
 
+      - name: Build production core dependencies
+        working-directory: .core-contracts
+        run: forge build --skip test --skip script
+
       - name: Run tests
         run: forge test -vvv
         env: 
+          ICARUS_CORE_ARTIFACTS: .core-contracts/out
           PRIVATE_KEY_DEPLOY: ${{ secrets.PRIVATE_KEY_DEPLOY }}

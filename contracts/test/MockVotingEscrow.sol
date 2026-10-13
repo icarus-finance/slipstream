@@ -14,6 +14,18 @@ contract MockVotingEscrow is IVotingEscrow {
         return 0;
     }
 
+    function token() external pure override returns (address) {
+        return address(0);
+    }
+
+    function createLockFor(uint256, uint256, address) external pure override returns (uint256) {
+        revert("Not implemented");
+    }
+
+    function depositFor(uint256, uint256) external pure override {
+        revert("Not implemented");
+    }
+
     function team() external override returns (address) {
         return _team;
     }

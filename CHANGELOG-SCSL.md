@@ -23,6 +23,9 @@ A list of all the changes made to the audited version of `velodrome/superchain-s
 
 ### CLGauge (contracts/gauge/CLGauge.sol)
 
+- Added single-position and aggregate account IRS claim-and-lock into owned/new veNFTs.
+- Added the shared Voter claim-hook callback with gauge context to positive liquid, locked and withdrawal claims.
+- Added real CL/VotingEscrow integration regressions; see [claim-and-lock](docs/claim-and-lock.md).
 - Add `WETH9` adn `gaugeFactory` addresses.
 - Remove `bridge` address.
 - Change `initialize()` to initialize `WETH9`.

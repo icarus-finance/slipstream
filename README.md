@@ -46,6 +46,9 @@ Run forge tests with `forge test`.
 
 ## Testing
 
+CL emissions support [claim-and-lock and the shared Voter hook](docs/claim-and-lock.md).
+The real-escrow integration tests require building the sibling `contracts` repository first.
+
 ### Invariants
 
 To run the invariant tests, echidna must be installed. The following instructions require additional installations (e.g. of solc-select). 

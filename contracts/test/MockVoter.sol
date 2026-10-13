@@ -11,8 +11,9 @@ import {ICLGauge} from "contracts/gauge/interfaces/ICLGauge.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICLPool} from "contracts/core/interfaces/ICLPool.sol";
 import {IVotingRewardsFactory} from "contracts/test/interfaces/IVotingRewardsFactory.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract MockVoter is IVoter {
+contract MockVoter is IVoter, ReentrancyGuard {
     // mock addresses used for testing gauge creation, a copy is stored in Constants.sol
     address public forwarder = address(11);
 
@@ -25,6 +26,8 @@ contract MockVoter is IVoter {
     mapping(address => bool) public override isAlive;
     mapping(address => address) public override gaugeToFees;
     mapping(address => address) public override gaugeToBribes;
+    mapping(address => address) public override poolForGauge;
+    address public override claimHook;
 
     IERC20 internal immutable rewardToken;
     IFactoryRegistry public immutable override factoryRegistry;
@@ -68,6 +71,7 @@ contract MockVoter is IVoter {
         require(CLFactory(_poolFactory).isPool(_pool));
         isAlive[gauge] = true;
         gauges[_pool] = gauge;
+        poolForGauge[gauge] = _pool;
         gaugeToFees[gauge] = feesVotingReward;
         gaugeToBribes[gauge] = bribeVotingReward;
         return gauge;
@@ -92,5 +96,28 @@ contract MockVoter is IVoter {
         for (uint256 i = 0; i < _length; i++) {
             ICLGauge(_gauges[i]).getReward(msg.sender);
         }
+    }
+
+    function setClaimHook(address hook) external override nonReentrant {
+        require(msg.sender == ve.team(), "NT");
+        uint256 size;
+        assembly {
+            size := extcodesize(hook)
+        }
+        require(hook == address(0) || size != 0, "IH");
+        claimHook = hook;
+    }
+
+    function claimRewardsAndLock(address[] memory gauges_, uint256 tokenId, uint256 lockDuration)
+        external
+        override
+        nonReentrant
+        returns (uint256)
+    {
+        require(tokenId == 0 || lockDuration == 0, "IP");
+        for (uint256 i = 0; i < gauges_.length; i++) {
+            tokenId = ICLGauge(gauges_[i]).getRewardAndLock(msg.sender, tokenId, tokenId == 0 ? lockDuration : 0);
+        }
+        return tokenId;
     }
 }

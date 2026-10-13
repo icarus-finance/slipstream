@@ -12,6 +12,7 @@ interface ICLGauge {
     event Withdraw(address indexed user, uint256 indexed tokenId, uint128 indexed liquidityToStake);
     event ClaimFees(address indexed from, uint256 claimed0, uint256 claimed1);
     event ClaimRewards(address indexed from, uint256 amount);
+    event ClaimRewardsLocked(address indexed from, uint256 indexed tokenId, uint256 amount);
 
     /// @notice NonfungiblePositionManager used to create nfts this gauge accepts
     function nft() external view returns (INonfungiblePositionManager);
@@ -108,6 +109,29 @@ interface ICLGauge {
     /// @dev Throws if not called by the position owner
     /// @param tokenId The tokenId of the position
     function getReward(uint256 tokenId) external;
+
+    /// @notice Claim all staked positions' IRS rewards into one existing or new veNFT.
+    /// @dev Caller must be account or voter. Existing veNFT must be owned by account.
+    ///      Reverts with IP for nonzero existing-lock duration, IRT for token mismatch, NA for authorization.
+    ///      Escrow validates new duration and deposit restrictions. No rewards means no lock or callback.
+    ///      A configured global Voter hook runs after settlement; failure rolls back the entire claim.
+    /// @param account Staker and owner of the resulting veNFT.
+    /// @param veTokenId Existing veNFT id, or zero to create one.
+    /// @param lockDuration New lock duration; must be zero for an existing veNFT.
+    /// @return resultingTokenId Existing or created veNFT id; unchanged when rewards are zero.
+    function getRewardAndLock(address account, uint256 veTokenId, uint256 lockDuration)
+        external
+        returns (uint256 resultingTokenId);
+
+    /// @notice Claim one staked position's IRS rewards into an existing or new veNFT.
+    /// @dev Same lock constraints as the all-position overload; only the position's staker may call.
+    /// @param tokenId Staked CL position id.
+    /// @param veTokenId Existing veNFT owned by caller, or zero to create one.
+    /// @param lockDuration New lock duration; zero for an existing veNFT.
+    /// @return resultingTokenId Existing or created veNFT id; unchanged when rewards are zero.
+    function getRewardAndLock(uint256 tokenId, uint256 veTokenId, uint256 lockDuration)
+        external
+        returns (uint256 resultingTokenId);
 
     /// @notice Notifies gauge of gauge rewards.
     /// @param amount Amount of gauge rewards (emissions) to notify. Must be greater than 604_800.
