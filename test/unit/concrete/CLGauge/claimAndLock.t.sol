@@ -12,6 +12,14 @@ interface RealClaimEscrow {
         bool isPermanent;
     }
 
+    struct TeamLock {
+        uint256 startTs;
+        uint256 endTs;
+        bool clawbacked;
+    }
+
+    function teamLocks(uint256 id) external view returns (TeamLock memory);
+
     function locked(uint256 id) external view returns (LockedBalance memory);
 
     function tokenId() external view returns (uint256);
@@ -54,7 +62,6 @@ contract CLRecordingClaimHook {
 
     function onClaim(uint256 _id, uint256 _amount, address _user, address _gauge) external {
         require(msg.sender == _gauge, "hook caller mismatch");
-        require(_gauge != failGauge, "hook failure");
         calls++;
         callsByGauge[_gauge]++;
         id = _id;
@@ -64,6 +71,7 @@ contract CLRecordingClaimHook {
         pool = address(CLGauge(_gauge).pool());
         poolsByGauge[_gauge] = pool;
         amountsByGauge[_gauge] = _amount;
+        require(_gauge != failGauge, "hook failure");
         if (reenter) {
             (bool success, bytes memory reason) = _gauge.call(
                 abi.encodeWithSignature("getRewardAndLock(address,uint256,uint256)", _user, _id, uint256(0))
@@ -376,45 +384,45 @@ contract ClaimAndLockTest is CLGaugeTest, RealEscrowArtifactDeployer {
         _assertHook(id, reward);
     }
 
-    function test_HookFailureRestoresLockBalancesAndPoolAccounting() public {
+    function test_HookFailurePreservesLockBalancesAndPoolAccounting() public {
         uint256 first = _stake();
         uint256 second = _stake();
         _accrue(first);
-        uint256 reward = gauge.earned(users.alice, first);
+        uint256 reward = gauge.earned(users.alice, first) + gauge.earned(users.alice, second);
         uint256 balance = rewardToken.balanceOf(address(gauge));
         uint256 reserve = pool.rewardReserve();
         uint256 growth = pool.rewardGrowthGlobalX128();
-        uint256 updated = pool.lastUpdated();
-        uint256 checkpoint = gauge.lastUpdateTime(first);
         hook.configure(address(gauge), false);
-        vm.expectRevert(bytes("hook failure"));
-        gauge.getRewardAndLock(users.alice, 0, MAXTIME);
-        assertEq(gauge.earned(users.alice, first), reward);
-        assertEq(gauge.earned(users.alice, second), reward);
-        assertEq(rewardToken.balanceOf(address(gauge)), balance);
-        assertEq(rewardToken.balanceOf(address(escrow)), 0);
+        uint256 id = gauge.getRewardAndLock(users.alice, 0, MAXTIME);
+        assertEq(gauge.earned(users.alice, first), 0);
+        assertEq(gauge.earned(users.alice, second), 0);
+        assertEq(rewardToken.balanceOf(address(gauge)), balance - reward);
+        assertEq(rewardToken.balanceOf(address(escrow)), reward);
+        assertEq(_amount(id), reward);
+        assertEq(escrow.ownerOf(id), users.alice);
         assertEq(rewardToken.balanceOf(users.alice), 0);
-        assertEq(realEscrow.tokenId(), 0);
+        assertEq(realEscrow.tokenId(), 1);
         assertEq(rewardToken.allowance(address(gauge), address(escrow)), 0);
-        assertEq(pool.rewardReserve(), reserve);
-        assertEq(pool.rewardGrowthGlobalX128(), growth);
-        assertEq(pool.lastUpdated(), updated);
-        assertEq(gauge.lastUpdateTime(first), checkpoint);
+        assertLt(pool.rewardReserve(), reserve);
+        assertGt(pool.rewardGrowthGlobalX128(), growth);
+        assertEq(pool.lastUpdated(), block.timestamp);
+        assertEq(gauge.lastUpdateTime(first), block.timestamp);
         assertEq(hook.calls(), 0);
+        assertEq(gauge.getRewardAndLock(users.alice, id, 0), id);
+        assertEq(_amount(id), reward);
     }
 
-    function test_HookFailureRestoresWithdrawAndStake() public {
+    function test_HookFailureDoesNotBlockWithdrawAndReward() public {
         uint256 pos = _stake();
         uint256 reward = _accrue(pos);
-        uint256 liquidity = pool.stakedLiquidity();
         hook.configure(address(gauge), false);
-        vm.expectRevert(bytes("hook failure"));
         gauge.withdraw(pos);
-        assertEq(nft.ownerOf(pos), address(gauge));
-        assertTrue(gauge.stakedContains(users.alice, pos));
-        assertEq(pool.stakedLiquidity(), liquidity);
-        assertEq(gauge.earned(users.alice, pos), reward);
-        assertEq(rewardToken.balanceOf(users.alice), 0);
+        assertEq(nft.ownerOf(pos), users.alice);
+        assertFalse(gauge.stakedContains(users.alice, pos));
+        assertEq(uint256(pool.stakedLiquidity()), 0);
+        assertEq(gauge.rewards(pos), 0);
+        assertEq(rewardToken.balanceOf(users.alice), reward);
+        assertEq(hook.calls(), 0);
     }
 
     function test_HookReentryBlocked() public {
@@ -495,7 +503,7 @@ contract ClaimAndLockTest is CLGaugeTest, RealEscrowArtifactDeployer {
         _assertHook(id, reward);
     }
 
-    function test_VoterBatchSecondHookFailureRestoresFirstGaugeToo() public {
+    function test_VoterBatchFirstHookFailureStillSettlesBothGauges() public {
         uint256 pos = _stake();
         (CLGauge second, uint256 secondPos) = _secondGauge(true);
         addRewardToGauge(address(voter), address(gauge), TOKEN_1);
@@ -504,56 +512,85 @@ contract ClaimAndLockTest is CLGaugeTest, RealEscrowArtifactDeployer {
         vm.startPrank(users.alice);
         uint256 firstReward = gauge.earned(users.alice, pos);
         uint256 secondReward = second.earned(users.alice, secondPos);
-        uint256 reserve = pool.rewardReserve();
-        hook.configure(address(second), false);
+        hook.configure(address(gauge), false);
         address[] memory gauges = new address[](2);
         gauges[0] = address(gauge);
         gauges[1] = address(second);
-        vm.expectRevert(bytes("hook failure"));
-        claimVoter.claimRewardsAndLock(gauges, 0, MAXTIME);
-        assertEq(gauge.earned(users.alice, pos), firstReward);
-        assertEq(second.earned(users.alice, secondPos), secondReward);
-        assertEq(realEscrow.tokenId(), 0);
-        assertEq(rewardToken.balanceOf(address(escrow)), 0);
-        assertEq(pool.rewardReserve(), reserve);
-        assertEq(hook.calls(), 0);
+        uint256 id = claimVoter.claimRewardsAndLock(gauges, 0, MAXTIME);
+        assertEq(gauge.earned(users.alice, pos), 0);
+        assertEq(second.earned(users.alice, secondPos), 0);
+        assertEq(realEscrow.tokenId(), 1);
+        assertEq(_amount(id), firstReward + secondReward);
+        assertEq(rewardToken.balanceOf(address(escrow)), firstReward + secondReward);
+        assertEq(rewardToken.allowance(address(gauge), address(escrow)), 0);
+        assertEq(rewardToken.allowance(address(second), address(escrow)), 0);
+        assertEq(hook.calls(), 1);
+        assertEq(hook.gauge(), address(second));
+        assertEq(hook.id(), id);
+        assertEq(hook.amount(), secondReward);
     }
 
-    function test_TeamLockRestrictionPreserved() public {
+    function test_TeamLockAdditionPreservesVesting() public {
         deal(address(rewardToken), users.owner, TOKEN_1);
         vm.startPrank(users.owner);
         rewardToken.approve(address(escrow), TOKEN_1);
         uint256 id = realEscrow.createTeamLockFor(TOKEN_1, MAXTIME, users.alice, block.timestamp + WEEK);
+        RealClaimEscrow.TeamLock memory beforeTeam = realEscrow.teamLocks(id);
+        uint256 expiry = realEscrow.locked(id).end;
         vm.startPrank(users.alice);
         uint256 pos = _stake();
         uint256 reward = _accrue(pos);
-        vm.expectRevert(abi.encodeWithSignature("TeamLocked()"));
-        gauge.getRewardAndLock(pos, id, 0);
-        assertEq(gauge.earned(users.alice, pos), reward);
-        assertEq(_amount(id), TOKEN_1);
+        assertEq(gauge.getRewardAndLock(pos, id, 0), id);
+        assertEq(gauge.earned(users.alice, pos), 0);
+        assertEq(_amount(id), TOKEN_1 + reward);
+        assertEq(realEscrow.locked(id).end, expiry);
+        RealClaimEscrow.TeamLock memory afterTeam = realEscrow.teamLocks(id);
+        assertEq(afterTeam.startTs, beforeTeam.startTs);
+        assertEq(afterTeam.endTs, beforeTeam.endTs);
+        assertEq(afterTeam.clawbacked, beforeTeam.clawbacked);
+        assertEq(rewardToken.allowance(address(gauge), address(escrow)), 0);
+        _assertHook(id, reward);
     }
 
-    function test_HookFailureRestoresExistingLock() public {
+    function test_HookFailurePreservesExistingLockAddition() public {
         uint256 id = _lock(users.alice, MAXTIME);
+        uint256 expiry = realEscrow.locked(id).end;
         uint256 pos = _stake();
         uint256 reward = _accrue(pos);
         hook.configure(address(gauge), false);
-        vm.expectRevert(bytes("hook failure"));
-        gauge.getRewardAndLock(pos, id, 0);
-        assertEq(_amount(id), TOKEN_1);
-        assertEq(gauge.earned(users.alice, pos), reward);
-        assertEq(rewardToken.balanceOf(address(escrow)), TOKEN_1);
+        assertEq(gauge.getRewardAndLock(pos, id, 0), id);
+        assertEq(_amount(id), TOKEN_1 + reward);
+        assertEq(realEscrow.locked(id).end, expiry);
+        assertEq(gauge.earned(users.alice, pos), 0);
+        assertEq(rewardToken.balanceOf(address(escrow)), TOKEN_1 + reward);
         assertEq(rewardToken.allowance(address(gauge), address(escrow)), 0);
     }
 
-    function test_HookFailureRestoresLiquidReward() public {
+    function test_HookFailurePreservesLiquidRewardWithoutDoublePayment() public {
         uint256 pos = _stake();
         uint256 reward = _accrue(pos);
         hook.configure(address(gauge), false);
-        vm.expectRevert(bytes("hook failure"));
         gauge.getReward(pos);
-        assertEq(rewardToken.balanceOf(users.alice), 0);
-        assertEq(gauge.earned(users.alice, pos), reward);
+        assertEq(rewardToken.balanceOf(users.alice), reward);
+        assertEq(gauge.earned(users.alice, pos), 0);
+        gauge.getReward(pos);
+        assertEq(rewardToken.balanceOf(users.alice), reward);
+    }
+
+    function test_LegacyVoterLiquidClaimContinuesAfterEachHookFailure() public {
+        uint256 first = _stake();
+        uint256 second = _stake();
+        _accrue(first);
+        uint256 reward = gauge.earned(users.alice, first) + gauge.earned(users.alice, second);
+        hook.configure(address(gauge), false);
+        address[] memory gauges = new address[](1);
+        gauges[0] = address(gauge);
+        voter.claimRewards(gauges);
+        assertEq(rewardToken.balanceOf(users.alice), reward);
+        assertEq(gauge.earned(users.alice, first), 0);
+        assertEq(gauge.earned(users.alice, second), 0);
+        assertEq(hook.calls(), 0);
+        assertEq(hook.callsByGauge(address(gauge)), 0);
     }
 
     function test_LegacyVoterLiquidClaimPaysEachPositionAndInvokesHook() public {

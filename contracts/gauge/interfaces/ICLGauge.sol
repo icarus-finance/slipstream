@@ -114,7 +114,7 @@ interface ICLGauge {
     /// @dev Caller must be account or voter. Existing veNFT must be owned by account.
     ///      Reverts with IP for nonzero existing-lock duration, IRT for token mismatch, NA for authorization.
     ///      Escrow validates new duration and deposit restrictions. No rewards means no lock or callback.
-    ///      A configured global Voter hook runs after settlement; failure rolls back the entire claim.
+    ///      A configured global Voter hook runs after settlement; hook reverts are ignored.
     /// @param account Staker and owner of the resulting veNFT.
     /// @param veTokenId Existing veNFT id, or zero to create one.
     /// @param lockDuration New lock duration; must be zero for an existing veNFT.

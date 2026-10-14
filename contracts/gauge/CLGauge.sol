@@ -230,7 +230,10 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
             }
             emit ClaimRewards(account, reward);
             address hook = voter.claimHook();
-            if (hook != address(0)) IClaimHook(hook).onClaim(veTokenId, amountLocked, account, address(this));
+            if (hook != address(0)) {
+                // Optional bonuses must not roll back settled rewards or prevent LP withdrawal.
+                try IClaimHook(hook).onClaim(veTokenId, amountLocked, account, address(this)) {} catch {}
+            }
         }
         return veTokenId;
     }

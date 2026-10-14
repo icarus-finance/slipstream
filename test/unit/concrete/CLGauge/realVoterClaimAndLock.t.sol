@@ -159,22 +159,23 @@ contract RealVoterClaimAndLockTest is CLGaugeTest, RealEscrowArtifactDeployer {
         assertEq(realEscrow.tokenId(), 0);
     }
 
-    function test_ProductionVoterLaterHookFailureRollsBackEarlierGaugeAndNFT() public {
-        (uint256 first, uint256 second,) = _accrueBoth();
+    function test_ProductionVoterLaterHookFailurePreservesEarlierGaugeAndNFT() public {
+        (uint256 first, uint256 second, uint256 amount) = _accrueBoth();
         uint256 firstReward = firstGauge.earned(users.alice, first);
-        uint256 secondReward = secondGauge.earned(users.alice, second);
-        uint256 firstReserve = firstPool.rewardReserve();
-        uint256 secondReserve = secondPool.rewardReserve();
         hook.configure(address(secondGauge), false);
-        vm.expectRevert(bytes("hook failure"));
-        claimVoter.claimRewardsAndLock(_gauges(), 0, MAXTIME);
-        assertEq(realEscrow.tokenId(), 0);
-        assertEq(rewardToken.balanceOf(address(escrow)), 0);
-        assertEq(firstGauge.earned(users.alice, first), firstReward);
-        assertEq(secondGauge.earned(users.alice, second), secondReward);
-        assertEq(firstPool.rewardReserve(), firstReserve);
-        assertEq(secondPool.rewardReserve(), secondReserve);
-        assertEq(hook.calls(), 0);
+        uint256 id = claimVoter.claimRewardsAndLock(_gauges(), 0, MAXTIME);
+        assertEq(realEscrow.tokenId(), 1);
+        assertEq(_amount(id), amount);
+        assertEq(escrow.ownerOf(id), users.alice);
+        assertEq(rewardToken.balanceOf(address(escrow)), amount);
+        assertEq(firstGauge.earned(users.alice, first), 0);
+        assertEq(secondGauge.earned(users.alice, second), 0);
+        assertEq(rewardToken.allowance(address(firstGauge), address(escrow)), 0);
+        assertEq(rewardToken.allowance(address(secondGauge), address(escrow)), 0);
+        assertEq(hook.calls(), 1);
+        assertEq(hook.gauge(), address(firstGauge));
+        assertEq(hook.id(), id);
+        assertEq(hook.amount(), firstReward);
     }
 
     function test_ProductionVoterMixedV2AndCLBatchUsesOneNFTAndGlobalHook() public {

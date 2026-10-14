@@ -25,7 +25,9 @@ LP position ids and veNFT ids belong to different NFT contracts. `veTokenId == 0
 new timed lock owned by the account. Duration is seconds, rounded down to escrow's weekly boundary
 and bounded by its four-year maximum. For an existing veNFT, duration must be zero and the account
 must own it; approved operators cannot redirect rewards into a foreign NFT. Existing lock duration
-and permanent status are preserved. Escrow's expired, team-lock and managed restrictions apply.
+and permanent status are preserved. Team-locked veNFTs accept additions without changing their
+vesting schedule; the added IRS follows that lock's existing clawback terms. Escrow's expired
+and managed restrictions apply.
 The reward token must equal escrow's underlying token. No user IRS approval is required.
 
 Zero rewards create no NFT and trigger no hook. Out-of-range positions can yield zero while
@@ -49,11 +51,12 @@ Legacy Voter liquid claims invoke one callback per positive position. Account lo
 one callback per gauge, after aggregation. Repeated claims in the same block cannot pay twice.
 Withdrawals automatically claim liquid IRS and therefore invoke the liquid callback too.
 
-Claims and withdrawals are nonreentrant. Hook failures atomically revert rewards, pool checkpoints,
-escrow changes and transfers; withdrawal failures also restore staking and NFT custody. A global
-reverting hook can block claims and withdrawals wherever positive rewards are due. Team can repair
-or disable it through Voter. Hooks receive no token allowance. Reward funding and policy remain
-responsibilities of the future hook implementation.
+Claims and withdrawals are nonreentrant. Callbacks are best effort: hook reverts are caught,
+so settled rewards, pool checkpoints, escrow deposits and LP withdrawals persist. Failed hook
+state changes revert; successful hook state changes persist, and batches continue to later gauges.
+No callback retry is provided. Team can replace or disable the hook through Voter. Transactions
+still require sufficient gas; callbacks have no separate gas cap. Hooks receive no token allowance.
+Reward funding and policy remain responsibilities of the future hook implementation.
 
 ## Deployment and verification
 
@@ -80,6 +83,7 @@ the default is `main`. A core version without the new APIs fails these integrati
 Run full `forge test` for pool/periphery regressions.
 
 The claim-and-lock suites cover ownership, escrow restrictions, zero/out-of-range rewards,
-multi-position conservation, same-block repeated claims, callback ordering/reentrancy, and complete
-claim/withdrawal rollback. Production-Voter tests cover later-created gauges and mixed V2/CL batches
-funding one NFT, with authenticated per-gauge callback amounts and cleared escrow allowances.
+multi-position conservation, same-block repeated claims, callback ordering/reentrancy, team-lock
+vesting preservation, and successful claims/withdrawals despite callback reverts. Production-Voter
+tests cover later-created gauges and mixed V2/CL batches funding one NFT, with authenticated
+per-gauge callback amounts and cleared escrow allowances.
