@@ -1040,11 +1040,15 @@ contract CLPrivatePool is ICLPool {
             // ensure that the slot is not cleared, for gas savings
             gaugeFees.token0 = 1;
             TransferHelper.safeTransfer(token0, msg.sender, --amount0);
+        } else {
+            amount0 = 0;
         }
         if (amount1 > 1) {
             // ensure that the slot is not cleared, for gas savings
             gaugeFees.token1 = 1;
             TransferHelper.safeTransfer(token1, msg.sender, --amount1);
+        } else {
+            amount1 = 0;
         }
 
         emit CollectFees(msg.sender, amount0, amount1);

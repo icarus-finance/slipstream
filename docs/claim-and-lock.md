@@ -1,5 +1,5 @@
 ---
-read_when: Integrating CL emissions claims, configuring shared claim rewards, or deploying CLGauge with the updated Icarus Voter.
+read_when: Integrating CL emissions claims or pool fee collection, configuring shared claim rewards, or deploying CLGauge with the updated Icarus Voter.
 ---
 
 # CL IRS claim-and-lock
@@ -61,6 +61,27 @@ state changes revert; successful hook state changes persist, and batches continu
 No callback retry is provided. Team can replace or disable the hook through Voter. Transactions
 still require sufficient gas; callbacks have no separate gas cap. Hooks receive no token allowance.
 Reward funding and policy remain responsibilities of the future hook implementation.
+
+## Pool fee collection
+
+`CLPool.collectFees()` and `CLPrivatePool.collectFees()` return only amounts actually
+transferred to the gauge. Each token retains one smallest unit in the pool after a
+nonzero sweep; collecting again with only that sentinel returns zero. This keeps
+`CLGauge.fees0/fees1` synchronized with received tokens across idle collection cycles,
+including when only one side of the pair earns new fees. Otherwise a phantom fee
+liability can make fee forwarding and normal emissions notifications revert.
+
+This correction targets new deployments. Existing immutable pool clones do not gain
+the corrected behavior; no legacy accounting repair or compatibility path is included.
+
+Regression coverage checks both pool implementations at zero, sentinel-only, minimum
+sweep and asymmetric balances, with fuzzed transfer conservation. A real-swap gauge
+test checks idle notifications followed by fresh fee forwarding:
+
+```sh
+forge test --match-path 'test/unit/concrete/CLPool/collectFeesSentinel.t.sol'
+forge test --match-contract GaugeFeeSentinelRegressionTest
+```
 
 ## Deployment and verification
 
