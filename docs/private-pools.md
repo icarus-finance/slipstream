@@ -78,6 +78,11 @@ Likewise, whitelisting a public swap router allows every router user to swap; us
 executors that enforce their own upstream caller permissions. This change introduces no
 production Cyclotron proxy or permissioned swap router.
 
+New CLGauge deployments support `deposit(tokenId, recipient)` as described in
+[mint-and-stake integration](liquidity-stake-helper.md). An adapter choosing that overload
+gives the recipient direct claim and withdrawal rights; use the original self-deposit API
+when proxy-controlled custody is required. Existing gauge deployments do not gain the overload.
+
 Gauge actions require neither the gauge nor the staker to be whitelisted. Direct ordinary
 mint/swap/flash flows require callback-capable contracts.
 

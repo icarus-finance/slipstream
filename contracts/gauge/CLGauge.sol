@@ -240,6 +240,16 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
 
     /// @inheritdoc ICLGauge
     function deposit(uint256 tokenId) external override nonReentrant {
+        _deposit(tokenId, msg.sender);
+    }
+
+    /// @inheritdoc ICLGauge
+    function deposit(uint256 tokenId, address recipient) external override nonReentrant {
+        require(recipient != address(0), "ZA");
+        _deposit(tokenId, recipient);
+    }
+
+    function _deposit(uint256 tokenId, address recipient) private {
         require(nft.ownerOf(tokenId) == msg.sender, "NA");
         require(voter.isAlive(address(this)), "GK");
         (,, address _token0, address _token1, int24 _tickSpacing, int24 tickLower, int24 tickUpper,,,,,) =
@@ -254,7 +264,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
         );
 
         nft.safeTransferFrom(msg.sender, address(this), tokenId);
-        _stakes[msg.sender].add(tokenId);
+        _stakes[recipient].add(tokenId);
 
         (,,,,,,, uint128 liquidityToStake,,,,) = nft.positions(tokenId);
         pool.stake(liquidityToStake.toInt128(), tickLower, tickUpper, true);
@@ -263,7 +273,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
         rewardGrowthInside[tokenId] = rewardGrowth;
         lastUpdateTime[tokenId] = block.timestamp;
 
-        emit Deposit(msg.sender, tokenId, liquidityToStake);
+        emit Deposit(recipient, tokenId, liquidityToStake);
     }
 
     /// @inheritdoc ICLGauge

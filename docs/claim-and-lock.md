@@ -12,6 +12,10 @@ and an updated test mock, not another production Voter.
 
 ## Claims
 
+New gauges also support `deposit(positionId, recipient)`; `deposit(positionId)` retains
+its existing behavior. The recipient becomes the staker for all claim and withdrawal APIs.
+See [mint-and-stake integration](liquidity-stake-helper.md) for the helper and deployment boundary.
+
 - Existing `getReward(positionId)` remains callable by the position's staker.
 - Existing `getReward(account)` remains Voter-only, claiming each staked position liquid.
 - `getRewardAndLock(positionId, veTokenId, lockDuration)` claims one staked LP position into a lock.

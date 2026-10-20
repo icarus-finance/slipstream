@@ -148,6 +148,13 @@ interface ICLGauge {
     /// @param tokenId The tokenId of the position
     function deposit(uint256 tokenId) external;
 
+    /// @notice Deposit an owned CL position and give its staking rights to recipient.
+    /// @dev Caller must own the NFT. Accrued fees are paid to caller before deposit.
+    ///      Recipient receives withdrawal and emissions rights under the existing gauge APIs.
+    /// @param tokenId The tokenId of the position
+    /// @param recipient Nonzero account receiving staking rights
+    function deposit(uint256 tokenId, address recipient) external;
+
     /// @notice Used to withdraw a CL position from the gauge
     /// @notice Allows the user to receive fees instead of emissions
     /// @notice Outstanding emissions will be collected on withdrawal
