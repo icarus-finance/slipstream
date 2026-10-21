@@ -15,6 +15,8 @@ contract LiquidityStakeHelperTest is BaseFixture {
         pool = CLPool(poolFactory.createPool(address(token0), address(token1), TICK_SPACING_60, encodePriceSqrt(1, 1)));
         gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
         helper = new LiquidityStakeHelper(address(nft));
+        vm.prank(users.owner);
+        gaugeFactory.setWhitelisted(address(helper), true);
         vm.startPrank(users.alice);
         token0.approve(address(helper), type(uint256).max);
         token1.approve(address(helper), type(uint256).max);
@@ -51,6 +53,22 @@ contract LiquidityStakeHelperTest is BaseFixture {
         gauge.withdraw(id);
         assertEq(nft.ownerOf(id), users.alice);
         assertEq(uint256(pool.stakedLiquidity()), 0);
+    }
+
+    function test_RevertUnwhitelistedHelperRollsBackMintAndInputs() public {
+        vm.startPrank(users.owner);
+        gaugeFactory.setWhitelisted(address(helper), false);
+        vm.startPrank(users.alice);
+        uint256 before0 = token0.balanceOf(users.alice);
+        uint256 before1 = token1.balanceOf(users.alice);
+        vm.expectRevert(bytes("NW"));
+        helper.mintAndStake(params(), 1);
+        assertEq(token0.balanceOf(users.alice), before0);
+        assertEq(token1.balanceOf(users.alice), before1);
+        assertEq(nft.balanceOf(address(gauge)), 0);
+        assertEq(nft.balanceOf(address(helper)), 0);
+        assertEq(gauge.stakedLength(users.alice), 0);
+        assertEq(uint256(pool.liquidity()), 0);
     }
 
     function test_RefundsPreserveDonationsAndClearApprovals() public {
@@ -120,20 +138,37 @@ contract LiquidityStakeHelperTest is BaseFixture {
         assertEq(uint256(pool.stakedLiquidity()), 0);
     }
 
-    function test_MultiplePositionsAndRecipients() public {
+    function test_MultiplePositionsForCaller() public {
         (uint256 id0,,,) = helper.mintAndStake(params(), 1);
         INonfungiblePositionManager.MintParams memory p = params();
-        p.recipient = users.charlie;
         (uint256 id1,,,) = helper.mintAndStake(p, 1);
         (uint256 id2,,,) = helper.mintAndStake(p, 1);
         assertTrue(gauge.stakedContains(users.alice, id0));
-        assertTrue(gauge.stakedContains(users.charlie, id1));
-        assertTrue(gauge.stakedContains(users.charlie, id2));
+        assertTrue(gauge.stakedContains(users.alice, id1));
+        assertTrue(gauge.stakedContains(users.alice, id2));
+        vm.startPrank(users.charlie);
         vm.expectRevert(bytes("NA"));
         gauge.withdraw(id1);
-        vm.startPrank(users.charlie);
+        vm.startPrank(users.alice);
         gauge.withdraw(id1);
-        assertEq(nft.ownerOf(id1), users.charlie);
+        assertEq(nft.ownerOf(id1), users.alice);
+    }
+
+    function test_RevertThirdPartyRecipientBeforeMovingFunds() public {
+        INonfungiblePositionManager.MintParams memory p = params();
+        p.recipient = users.charlie;
+        uint256 before0 = token0.balanceOf(users.alice);
+        uint256 before1 = token1.balanceOf(users.alice);
+        vm.expectRevert(bytes("NA"));
+        helper.mintAndStake(p, 1);
+        assertEq(token0.balanceOf(users.alice), before0);
+        assertEq(token1.balanceOf(users.alice), before1);
+        assertEq(token0.balanceOf(address(helper)), 0);
+        assertEq(token1.balanceOf(address(helper)), 0);
+        assertEq(nft.balanceOf(address(helper)), 0);
+        assertEq(nft.balanceOf(address(gauge)), 0);
+        assertEq(gauge.stakedLength(users.charlie), 0);
+        assertEq(uint256(pool.liquidity()), 0);
     }
 
     function test_RevertShortTransferCannotUseDonation() public {

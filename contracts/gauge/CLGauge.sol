@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import {ICLGauge} from "contracts/gauge/interfaces/ICLGauge.sol";
+import {ICLGaugeFactory} from "contracts/gauge/interfaces/ICLGaugeFactory.sol";
 import {IVoter} from "contracts/core/interfaces/IVoter.sol";
 import {IVotingEscrow} from "contracts/core/interfaces/IVotingEscrow.sol";
 import {ICLPool} from "contracts/core/interfaces/ICLPool.sol";
@@ -69,6 +70,9 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     bool public override isPool;
 
     /// @inheritdoc ICLGauge
+    ICLGaugeFactory public override factory;
+
+    /// @inheritdoc ICLGauge
     function initialize(
         address _pool,
         address _feesVotingReward,
@@ -81,6 +85,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
         bool _isPool
     ) external override {
         require(address(pool) == address(0), "AI");
+        factory = ICLGaugeFactory(msg.sender);
         pool = ICLPool(_pool);
         feesVotingReward = _feesVotingReward;
         rewardToken = _rewardToken;
@@ -246,6 +251,7 @@ contract CLGauge is ICLGauge, ERC721Holder, ReentrancyGuard {
     /// @inheritdoc ICLGauge
     function deposit(uint256 tokenId, address recipient) external override nonReentrant {
         require(recipient != address(0), "ZA");
+        require(recipient == msg.sender || factory.isWhitelisted(msg.sender), "NW");
         _deposit(tokenId, recipient);
     }
 

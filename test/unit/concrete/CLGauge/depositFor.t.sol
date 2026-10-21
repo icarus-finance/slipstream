@@ -13,6 +13,8 @@ contract DepositForTest is CLGaugeTest {
         super.setUp();
         pool = CLPool(poolFactory.createPool(address(token0), address(token1), TICK_SPACING_60, encodePriceSqrt(1, 1)));
         gauge = CLGauge(voter.createGauge(address(poolFactory), address(pool)));
+        vm.prank(users.owner);
+        gaugeFactory.setWhitelisted(users.alice, true);
         vm.prank(users.feeManager);
         customUnstakedFeeModule.setCustomFee(address(pool), 420);
         vm.startPrank(users.alice);
@@ -49,6 +51,62 @@ contract DepositForTest is CLGaugeTest {
         assertEq(nft.ownerOf(tokenId), users.charlie);
         assertEq(gauge.stakedLength(users.charlie), 0);
         assertEqUint(pool.stakedLiquidity(), 0);
+    }
+
+    function test_RevertIf_DepositForCallerNotWhitelisted() public {
+        uint256 tokenId = _mintApproved();
+        vm.startPrank(users.owner);
+        gaugeFactory.setWhitelisted(users.alice, false);
+        vm.startPrank(users.alice);
+        vm.expectRevert(bytes("NW"));
+        gauge.deposit(tokenId, users.charlie);
+        assertEq(nft.ownerOf(tokenId), users.alice);
+        assertEq(gauge.stakedLength(users.charlie), 0);
+    }
+
+    function test_WhitelistedRecipientDoesNotAuthorizeCaller() public {
+        uint256 tokenId = _mintApproved();
+        vm.startPrank(users.owner);
+        gaugeFactory.setWhitelisted(users.alice, false);
+        gaugeFactory.setWhitelisted(users.charlie, true);
+        vm.startPrank(users.alice);
+        vm.expectRevert(bytes("NW"));
+        gauge.deposit(tokenId, users.charlie);
+    }
+
+    function test_RevocationPreservesExistingRecipientClaimsAndWithdrawals() public {
+        uint256 tokenId = _mintApproved();
+        gauge.deposit(tokenId, users.charlie);
+        uint256 nextTokenId = _mintApproved();
+        vm.startPrank(users.owner);
+        gaugeFactory.setWhitelisted(users.alice, false);
+        vm.startPrank(users.alice);
+        vm.expectRevert(bytes("NW"));
+        gauge.deposit(nextTokenId, users.charlie);
+
+        addRewardToGauge(address(voter), address(gauge), TOKEN_1);
+        skip(1 days);
+        vm.startPrank(users.charlie);
+        gauge.getReward(tokenId);
+        assertGt(rewardToken.balanceOf(users.charlie), 0);
+        gauge.withdraw(tokenId);
+        assertEq(nft.ownerOf(tokenId), users.charlie);
+    }
+
+    function test_UnwhitelistedCallerCanDepositBothSelfSelectors() public {
+        uint256 tokenId = _mintApproved();
+        uint256 nextTokenId = _mintApproved();
+        vm.startPrank(users.owner);
+        gaugeFactory.setWhitelisted(users.alice, false);
+        vm.startPrank(users.alice);
+        gauge.deposit(tokenId);
+        gauge.deposit(nextTokenId, users.alice);
+        assertTrue(gauge.stakedContains(users.alice, tokenId));
+        assertTrue(gauge.stakedContains(users.alice, nextTokenId));
+        gauge.withdraw(tokenId);
+        gauge.withdraw(nextTokenId);
+        assertEq(nft.ownerOf(tokenId), users.alice);
+        assertEq(nft.ownerOf(nextTokenId), users.alice);
     }
 
     function test_RevertIf_DepositForZeroRecipient() public {

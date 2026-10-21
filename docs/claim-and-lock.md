@@ -14,7 +14,10 @@ and an updated test mock, not another production Voter.
 
 New gauges also support `deposit(positionId, recipient)`; `deposit(positionId)` retains
 its existing behavior. The recipient becomes the staker for all claim and withdrawal APIs.
-See [mint-and-stake integration](liquidity-stake-helper.md) for the helper and deployment boundary.
+Depositing for another account requires the caller to be whitelisted by the gauge factory;
+self-deposits remain unrestricted by that whitelist. See
+[mint-and-stake integration](liquidity-stake-helper.md) for trusted-helper recipient guards,
+factory administration and the deployment boundary.
 
 - Existing `getReward(positionId)` remains callable by the position's staker.
 - Existing `getReward(account)` remains Voter-only, claiming each staked position liquid.
@@ -24,6 +27,11 @@ See [mint-and-stake integration](liquidity-stake-helper.md) for the helper and d
   then funds escrow once and calls the hook once for the aggregate positive reward.
 - Account overload has the same selector and return value as V2 Gauge, so the shared
   `Voter.claimRewardsAndLock(gauges, veTokenId, lockDuration)` batches V2 and CL gauges into one NFT.
+
+Both account overloads iterate the account's complete stake list. A bloated list increases
+their gas cost and can prevent account-wide claims within transaction gas limits.
+Single-position claims, single-position withdrawals and new deposits do not iterate that
+list; unsolicited-deposit griefing does not remove those paths.
 
 LP position ids and veNFT ids belong to different NFT contracts. `veTokenId == 0` creates a
 new timed lock owned by the account. Duration is seconds, rounded down to escrow's weekly boundary

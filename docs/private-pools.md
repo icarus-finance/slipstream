@@ -83,7 +83,12 @@ New CLGauge deployments support `deposit(tokenId, recipient)` as described in
 gives the recipient direct claim and withdrawal rights; use the original self-deposit API
 when proxy-controlled custody is required. Existing gauge deployments do not gain the overload.
 
-Gauge actions require neither the gauge nor the staker to be whitelisted. Direct ordinary
+Third-party gauge deposits additionally require the immediate caller to be whitelisted
+in the gauge's `CLGaugeFactory`. This separate whitelist is administered by that factory's
+retained deployment owner or the current `VotingEscrow(Voter.ve()).team()`; trusted helpers must enforce
+recipient authorization. Private pool-factory whitelisting does not grant this permission.
+Self-deposits, claims and withdrawals require no gauge-factory whitelist entry.
+Gauge actions require neither the gauge nor the staker to be private-factory-whitelisted. Direct ordinary
 mint/swap/flash flows require callback-capable contracts.
 
 ## Fees

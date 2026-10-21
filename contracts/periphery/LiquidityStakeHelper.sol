@@ -11,7 +11,7 @@ import {IVoter} from "contracts/core/interfaces/IVoter.sol";
 import {ICLGauge} from "contracts/gauge/interfaces/ICLGauge.sol";
 import {TransferHelper} from "./libraries/TransferHelper.sol";
 
-/// @notice Mint an exact-range CL position and stake it for a recipient atomically.
+/// @notice Mint an exact-range CL position and stake it for the caller atomically.
 /// @dev Requires a gauge supporting deposit(tokenId, recipient). ERC20 inputs only.
 contract LiquidityStakeHelper is ReentrancyGuard {
     using SafeMath for uint256;
@@ -33,7 +33,7 @@ contract LiquidityStakeHelper is ReentrancyGuard {
     }
 
     /// @notice Approve desired inputs to this helper first. Refunds go to caller.
-    /// @param params Standard mint parameters; recipient receives gauge ownership rights.
+    /// @param params Standard mint parameters; recipient must equal msg.sender.
     /// @param minLiquidity Minimum liquidity minted (not token amounts).
     /// @dev Existing pool/gauge only: sqrtPriceX96 must be zero. Tokens must be sorted.
     ///      Fee-on-transfer and rebasing tokens are unsupported. One-sided ranges supported.
@@ -44,6 +44,7 @@ contract LiquidityStakeHelper is ReentrancyGuard {
     {
         require(params.token0 != address(0) && params.token0 < params.token1, "TOK");
         require(params.recipient != address(0) && params.recipient != address(this), "ZA");
+        require(params.recipient == msg.sender, "NA");
         require(params.sqrtPriceX96 == 0, "NEW");
         require(params.deadline >= block.timestamp, "Transaction too old");
         address pool = factory.getPool(params.token0, params.token1, params.tickSpacing);

@@ -148,9 +148,13 @@ interface ICLGauge {
     /// @param tokenId The tokenId of the position
     function deposit(uint256 tokenId) external;
 
+    /// @notice Factory controlling trusted third-party deposit callers.
+    function factory() external view returns (ICLGaugeFactory);
+
     /// @notice Deposit an owned CL position and give its staking rights to recipient.
     /// @dev Caller must own the NFT. Accrued fees are paid to caller before deposit.
     ///      Recipient receives withdrawal and emissions rights under the existing gauge APIs.
+    ///      Depositing for another account requires factory whitelisting of the caller.
     /// @param tokenId The tokenId of the position
     /// @param recipient Nonzero account receiving staking rights
     function deposit(uint256 tokenId, address recipient) external;
