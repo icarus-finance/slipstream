@@ -69,14 +69,18 @@ const v3CoreFactoryFixture: Fixture<{
     mockVotingEscrow.address
   )) as MockVoter
 
-  
   const gaugeImplementation = (await GaugeImplementationFactory.deploy()) as CLGauge
   const gaugeFactory = (await GaugeFactoryFactory.deploy(
     mockVoter.address,
     gaugeImplementation.address
   )) as CLGaugeFactory
 
-  const factory = (await Factory.deploy(mockVoter.address, pool.address, gaugeFactory.address, gaugeImplementation.address)) as ICLFactory
+  const factory = (await Factory.deploy(
+    mockVoter.address,
+    pool.address,
+    gaugeFactory.address,
+    gaugeImplementation.address
+  )) as ICLFactory
   const customUnstakedFeeModule = (await CustomUnstakedFeeModuleFactory.deploy(
     factory.address
   )) as CustomUnstakedFeeModule

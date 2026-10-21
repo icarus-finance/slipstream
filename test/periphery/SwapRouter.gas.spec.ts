@@ -249,7 +249,7 @@ describe('SwapRouter gas tests', function () {
     )
 
     // With 10% unstaked fee to gauge, 90% of swap fees accrue to feeGrowthGlobal
-    // Updated values based on 1000 wei swaps with 0.3% swap fee and 10% unstaked fee  
+    // Updated values based on 1000 wei swaps with 0.3% swap fee and 10% unstaked fee
     expect(slots).to.deep.eq([
       ['680581748385586566590913987713229', '680581748385586566590913987713229'],
       ['680581748385586566590913987713229', '680581748385586566590913987713229'],

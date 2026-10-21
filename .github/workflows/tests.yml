@@ -34,7 +34,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: v1.7.1
 
       - name: Install deps
         run: forge install
@@ -60,7 +60,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: icarus-finance/contracts
-          ref: ${{ vars.ICARUS_CORE_REF || 'main' }}
+          # Matching Voter claimHook and claim-and-lock APIs; override deliberately when upgrading.
+          ref: ${{ vars.ICARUS_CORE_REF || 'a05e28fbc4e7521f87678fdbe0b90cea3ce89be3' }}
           path: .core-contracts
           submodules: recursive
       - uses: actions/setup-node@v4
@@ -71,7 +72,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: v1.7.1
 
       - name: Install deps
         run: forge install

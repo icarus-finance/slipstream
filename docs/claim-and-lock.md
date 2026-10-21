@@ -112,7 +112,8 @@ The narrow `../contracts/out` read permission permits loading these real depende
 Set `ICARUS_CORE_ARTIFACTS` to use another artifact directory inside the workspace. CI checks out
 core contracts in `.core-contracts`, builds them, and sets this variable. Merge the matching core
 Voter change first, or configure repository variable `ICARUS_CORE_REF` to a ref containing it;
-the default is `main`. A core version without the new APIs fails these integration tests.
+the default is the compatible commit pinned in the workflow (see [CI checks](ci.md)).
+A core version without the new APIs fails these integration tests.
 Run full `forge test` for pool/periphery regressions.
 
 The claim-and-lock suites cover ownership, escrow restrictions, zero/out-of-range rewards,
