@@ -5,9 +5,11 @@ read_when: Deploying Cyclotron private pools, configuring permissions or fees, i
 # Cyclotron private CL pools
 
 `CLPrivateFactory`, `CLPrivatePool` and `PrivateNonFungiblePositionManager` are isolated
-forks of `CLFactory`, `CLPool` and `NonfungiblePositionManager`. Public contracts and
-gauge/reward implementations are unchanged. Arbera and Cyclotron use
-one private factory; Cyclotron is the Robinhood rebrand.
+forks of `CLFactory`, `CLPool` and `NonfungiblePositionManager`. Public contracts are
+unchanged. Private pools may reuse `CLGauge` for IRS-only rewards or deploy the optional
+[`CLPrivateGauge` initial reward campaign](private-gauge-rewards.md), which transitions permanently
+to IRS using the existing pool counter. Arbera and Cyclotron use one private factory;
+Cyclotron is the Robinhood rebrand.
 
 ## Permissions
 
@@ -51,7 +53,7 @@ mode. Whitelisting only the proxy or user is insufficient for the pool check.
 
 The private manager guards only `mint`; its whitelist comes from the
 factory and its public-liquidity setting is local to the manager. The owner has no implicit
-minting permission. `multicall` preserves the original caller, so batching cannot bypass
+minting permission. The NFT manager's `multicall` preserves the original caller, so batching cannot bypass
 this guard. Mint callbacks keep the existing deterministic pool authentication and do not
 apply the wallet whitelist to the pool callback caller.
 
@@ -123,7 +125,8 @@ are enabled later, existing LP/gauge fee accounting applies.
 
 1. Deploy `CLPrivatePool` as the clone implementation.
 2. Deploy a **new instance** of existing `CLGaugeFactory`, using the existing Voter and
-   compatible `CLGauge` implementation. No `CLPrivateGauge` is needed.
+   compatible `CLGauge` implementation for IRS-only rewards, or `CLPrivateGauge` for the
+   [initial-reward campaign and transition](private-gauge-rewards.md).
 3. Deploy `CLPrivateFactory(voter, poolImplementation, gaugeFactory, gaugeImplementation)`.
    Its constructor installs the zero-default fee module; read `swapFeeModule()` for its address.
 4. Deploy `PrivateNonFungiblePositionManager(owner, factory, WETH9, tokenDescriptor, name,
@@ -141,8 +144,9 @@ spacing, so matching public/private pools collide. Its NFT-manager binding is al
 Reuse the implementation/code instead. Pool address derivation already reads the factory's
 implementation. Existing deployed periphery remains bound to its original factory.
 
-IRS funding, voting, gauge liveness and claim-and-lock remain unchanged. These changes
-do not deploy contracts or register a factory onchain.
+For `CLGauge`, IRS funding, voting, gauge liveness and claim-and-lock remain unchanged.
+`CLPrivateGauge` queues IRS until its campaign transition is finalized, then uses normal
+IRS reward behavior. These changes do not deploy contracts or register a factory onchain.
 
 ## Verification and maintenance
 

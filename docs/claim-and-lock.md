@@ -10,6 +10,11 @@ Zero disables the hook globally. No per-gauge setting or bonus policy is introdu
 The production Voter implementation remains in `../contracts`; Slipstream supplies its interface
 and an updated test mock, not another production Voter.
 
+The optional [`CLPrivateGauge` initial reward campaign](private-gauge-rewards.md) keeps these
+interfaces IRS-specific and queues IRS funding until its one-way campaign transition finishes.
+Initial rewards use separate liquid claims and never enter escrow or this hook. Public `CLGauge`
+behavior is unchanged.
+
 ## Claims
 
 New gauges also support `deposit(positionId, recipient)`; `deposit(positionId)` retains
