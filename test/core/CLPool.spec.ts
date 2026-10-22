@@ -1160,7 +1160,15 @@ describe('CLPool', () => {
     const p0 = (await sqrtTickMath.getSqrtRatioAtTick(-24081)).add(1)
     // initialize at a price of ~0.3 token1/token0
     // meaning if you swap in 2 token0, you should end up getting 0 token1
-    await pool.initialize(factory.address, token0.address, token1.address, 1, ethers.constants.AddressZero, ethers.constants.AddressZero, p0)
+    await pool.initialize(
+      factory.address,
+      token0.address,
+      token1.address,
+      1,
+      ethers.constants.AddressZero,
+      ethers.constants.AddressZero,
+      p0
+    )
     expect(await pool.liquidity(), 'current pool liquidity is 1').to.eq(0)
     expect((await pool.slot0()).tick, 'pool tick is -24081').to.eq(-24081)
 

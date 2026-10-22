@@ -466,7 +466,7 @@ abstract contract CLPoolSwapTests is CLPoolTest {
         internal
     {
         if (swapFailed) {
-            FailedSwap memory failedSwap = abi.decode(jsonConstants.parseRaw(assertKey), (FailedSwap));
+            FailedSwap memory failedSwap = readFailedSwap(assertKey);
 
             assertEq(swapErrorMessage, "SPL"); // only SPL happens
             assertApproxEqAbs(poolSetup.poolBalance0, failedSwap.poolBalance0, 1);
@@ -475,7 +475,7 @@ abstract contract CLPoolSwapTests is CLPoolTest {
             assertEq(poolSetup.tick, failedSwap.tickBefore);
             return;
         } else {
-            SuccessfulSwap memory successfulSwap = abi.decode(jsonConstants.parseRaw(assertKey), (SuccessfulSwap));
+            SuccessfulSwap memory successfulSwap = readSuccessfulSwap(assertKey);
 
             Vm.Log[] memory entries = vm.getRecordedLogs();
 
@@ -512,6 +512,36 @@ abstract contract CLPoolSwapTests is CLPoolTest {
                 successfulSwap
             );
         }
+    }
+
+    // Read fields with explicit types: generic JSON inference can encode numeric strings as integers.
+    function readFailedSwap(string memory key) internal view returns (FailedSwap memory expected) {
+        expected.poolBalance0 = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".poolBalance0")));
+        expected.poolBalance1 = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".poolBalance1")));
+        expected.poolPriceBeforeX96 =
+            uint160(vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".poolPriceBefore"))));
+        expected.swapError = vm.parseJsonString(jsonConstants, string(abi.encodePacked(key, ".swapError")));
+        expected.tickBefore = int24(vm.parseJsonInt(jsonConstants, string(abi.encodePacked(key, ".tickBefore"))));
+    }
+
+    function readSuccessfulSwap(string memory key) internal view returns (SuccessfulSwap memory expected) {
+        expected.amount0Before = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".amount0Before")));
+        expected.amount0Delta = vm.parseJsonInt(jsonConstants, string(abi.encodePacked(key, ".amount0Delta")));
+        expected.amount1Before = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".amount1Before")));
+        expected.amount1Delta = vm.parseJsonInt(jsonConstants, string(abi.encodePacked(key, ".amount1Delta")));
+        expected.executionPrice = vm.parseJsonString(jsonConstants, string(abi.encodePacked(key, ".executionPrice")));
+        expected.feeGrowthGlobal0X128Delta =
+            vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".feeGrowthGlobal0X128Delta")));
+        expected.feeGrowthGlobal1X128Delta =
+            vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".feeGrowthGlobal1X128Delta")));
+        expected.gaugeFeesToken0 = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".gaugeFeesToken0")));
+        expected.gaugeFeesToken1 = vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".gaugeFeesToken1")));
+        expected.poolPriceAfterX96 =
+            uint160(vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".poolPriceAfterX96"))));
+        expected.poolPriceBeforeX96 =
+            uint160(vm.parseJsonUint(jsonConstants, string(abi.encodePacked(key, ".poolPriceBeforeX96"))));
+        expected.tickAfter = int24(vm.parseJsonInt(jsonConstants, string(abi.encodePacked(key, ".tickAfter"))));
+        expected.tickBefore = int24(vm.parseJsonInt(jsonConstants, string(abi.encodePacked(key, ".tickBefore"))));
     }
 
     struct AssertSwapEvent {

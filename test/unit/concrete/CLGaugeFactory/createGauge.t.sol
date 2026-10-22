@@ -50,6 +50,7 @@ contract CreateGaugeTest is CLGaugeFactoryTest {
         feesVotingReward = voter.gaugeToFees(address(gauge));
 
         assertEq(address(gauge.pool()), pool);
+        assertEq(address(gauge.factory()), address(gaugeFactory));
         assertEq(gauge.feesVotingReward(), address(feesVotingReward));
         assertEq(gauge.rewardToken(), address(rewardToken));
         assertEq(gauge.isPool(), true);

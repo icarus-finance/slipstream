@@ -38,7 +38,7 @@ jobs:
         - name: Install node.js dependencies
           run: yarn --frozen-lockfile
   
-        - name: Run formatter check on *.sol and *.json
+        - name: Run formatter check on TypeScript tests
           run: yarn format:check
   
         # - name: run linter check on *.sol file

@@ -12,6 +12,7 @@ interface ICLGauge {
     event Withdraw(address indexed user, uint256 indexed tokenId, uint128 indexed liquidityToStake);
     event ClaimFees(address indexed from, uint256 claimed0, uint256 claimed1);
     event ClaimRewards(address indexed from, uint256 amount);
+    event ClaimRewardsLocked(address indexed from, uint256 indexed tokenId, uint256 amount);
 
     /// @notice NonfungiblePositionManager used to create nfts this gauge accepts
     function nft() external view returns (INonfungiblePositionManager);
@@ -109,6 +110,29 @@ interface ICLGauge {
     /// @param tokenId The tokenId of the position
     function getReward(uint256 tokenId) external;
 
+    /// @notice Claim all staked positions' IRS rewards into one existing or new veNFT.
+    /// @dev Caller must be account or voter. Existing veNFT must be owned by account.
+    ///      Reverts with IP for nonzero existing-lock duration, IRT for token mismatch, NA for authorization.
+    ///      Escrow validates new duration and deposit restrictions. No rewards means no lock or callback.
+    ///      A configured global Voter hook runs after settlement; hook reverts are ignored.
+    /// @param account Staker and owner of the resulting veNFT.
+    /// @param veTokenId Existing veNFT id, or zero to create one.
+    /// @param lockDuration New lock duration; must be zero for an existing veNFT.
+    /// @return resultingTokenId Existing or created veNFT id; unchanged when rewards are zero.
+    function getRewardAndLock(address account, uint256 veTokenId, uint256 lockDuration)
+        external
+        returns (uint256 resultingTokenId);
+
+    /// @notice Claim one staked position's IRS rewards into an existing or new veNFT.
+    /// @dev Same lock constraints as the all-position overload; only the position's staker may call.
+    /// @param tokenId Staked CL position id.
+    /// @param veTokenId Existing veNFT owned by caller, or zero to create one.
+    /// @param lockDuration New lock duration; zero for an existing veNFT.
+    /// @return resultingTokenId Existing or created veNFT id; unchanged when rewards are zero.
+    function getRewardAndLock(uint256 tokenId, uint256 veTokenId, uint256 lockDuration)
+        external
+        returns (uint256 resultingTokenId);
+
     /// @notice Notifies gauge of gauge rewards.
     /// @param amount Amount of gauge rewards (emissions) to notify. Must be greater than 604_800.
     function notifyRewardAmount(uint256 amount) external;
@@ -123,6 +147,17 @@ interface ICLGauge {
     /// @notice Allows the user to receive emissions instead of fees
     /// @param tokenId The tokenId of the position
     function deposit(uint256 tokenId) external;
+
+    /// @notice Factory controlling trusted third-party deposit callers.
+    function factory() external view returns (ICLGaugeFactory);
+
+    /// @notice Deposit an owned CL position and give its staking rights to recipient.
+    /// @dev Caller must own the NFT. Accrued fees are paid to caller before deposit.
+    ///      Recipient receives withdrawal and emissions rights under the existing gauge APIs.
+    ///      Depositing for another account requires factory whitelisting of the caller.
+    /// @param tokenId The tokenId of the position
+    /// @param recipient Nonzero account receiving staking rights
+    function deposit(uint256 tokenId, address recipient) external;
 
     /// @notice Used to withdraw a CL position from the gauge
     /// @notice Allows the user to receive fees instead of emissions

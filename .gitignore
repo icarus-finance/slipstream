@@ -3,6 +3,7 @@ cache/
 cache_hardhat/
 crytic-export/
 node_modules/
+.core-contracts/
 typechain/
 out/
 broadcast
