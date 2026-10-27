@@ -2,6 +2,19 @@
 pragma solidity =0.7.6;
 
 interface ICLGaugeFactory {
+    event WhitelistChanged(address indexed account, bool allowed);
+
+    /// @notice Deployment owner, retained after position manager configuration.
+    function owner() external view returns (address);
+
+    /// @notice Trusted callers allowed to deposit NFTs for other accounts.
+    function isWhitelisted(address account) external view returns (bool);
+
+    /// @notice Allow or revoke a trusted third-party depositor.
+    /// @dev Callable by the deployment owner or current VotingEscrow team.
+    ///      Trusted callers must enforce recipient authorization themselves.
+    function setWhitelisted(address account, bool allowed) external;
+
     /// @notice Address of the voter contract
     function voter() external view returns (address);
 

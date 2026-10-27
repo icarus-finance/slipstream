@@ -2,6 +2,7 @@
 pragma solidity =0.7.6;
 
 import "contracts/core/interfaces/ICLPool.sol";
+import {IVoter} from "contracts/core/interfaces/IVoter.sol";
 import "./interfaces/ICLGaugeFactory.sol";
 import "./CLGauge.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -13,7 +14,10 @@ contract CLGaugeFactory is ICLGaugeFactory {
     address public immutable override implementation;
     /// @inheritdoc ICLGaugeFactory
     address public override nft;
-    address private owner;
+    /// @inheritdoc ICLGaugeFactory
+    address public override owner;
+    /// @inheritdoc ICLGaugeFactory
+    mapping(address => bool) public override isWhitelisted;
 
     constructor(address _voter, address _implementation) {
         voter = _voter;
@@ -27,7 +31,14 @@ contract CLGaugeFactory is ICLGaugeFactory {
         require(owner == msg.sender, "NA");
         require(_nft != address(0), "ZA");
         nft = _nft;
-        delete owner;
+    }
+
+    /// @inheritdoc ICLGaugeFactory
+    function setWhitelisted(address account, bool allowed) external override {
+        require(msg.sender == owner || msg.sender == IVoter(voter).ve().team(), "NA");
+        require(account != address(0), "ZA");
+        isWhitelisted[account] = allowed;
+        emit WhitelistChanged(account, allowed);
     }
 
     /// @inheritdoc ICLGaugeFactory

@@ -6,10 +6,17 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 interface IVotingEscrow is IERC721 {
     function team() external returns (address);
 
+    function token() external view returns (address);
+
+    function createLockFor(uint256 value, uint256 lockDuration, address to) external returns (uint256);
+
+    function depositFor(uint256 tokenId, uint256 value) external;
+
     /// @notice Check whether spender is owner or an approved user for a given veNFT
     /// @param _spender .
     /// @param _tokenId .
     function isApprovedOrOwner(address _spender, uint256 _tokenId) external returns (bool);
+
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)

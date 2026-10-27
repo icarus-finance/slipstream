@@ -8,6 +8,13 @@ import {IFactoryRegistry} from "contracts/core/interfaces/IFactoryRegistry.sol";
 interface IVoter {
     function ve() external view returns (IVotingEscrow);
 
+    /// @notice Shared post-claim callback configured by the VotingEscrow team on Voter.
+    function claimHook() external view returns (address);
+
+    function setClaimHook(address hook) external;
+
+    function poolForGauge(address gauge) external view returns (address);
+
     /// @notice Address of Minter.sol
     function minter() external view returns (address);
 
@@ -40,6 +47,11 @@ interface IVoter {
     /// @notice Claim emissions from gauges.
     /// @param _gauges Array of gauges to collect emissions from.
     function claimRewards(address[] memory _gauges) external;
+
+    /// @notice Claim emissions across compatible gauges into one owned or new veNFT.
+    function claimRewardsAndLock(address[] memory gauges_, uint256 tokenId, uint256 lockDuration)
+        external
+        returns (uint256);
 
     /// @notice Claim fees for a given NFT.
     /// @dev Utility to help batch fee claims.
